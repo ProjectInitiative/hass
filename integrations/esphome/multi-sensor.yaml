@@ -62,6 +62,21 @@ captive_portal:
 #     scl: 19
 #     scan: true    
 
+number:
+  - platform: template
+    name: DHT22 Temperature Offset
+    id: dht22_temperature_offset
+    restore_value: true
+    initial_value: 7
+    min_value: -70.0
+    max_value: 70.0
+    entity_category: "CONFIG"
+    unit_of_measurement: "°C"
+    optimistic: true
+    update_interval: never
+    step: 0.1
+    mode: box
+
 sensor:
 #   # Sound sensor
 #   - platform: adc
@@ -185,6 +200,7 @@ sensor:
     temperature:
       name: "Temperature"
       filters:
+        - lambda: return x - id(dht22_temperature_offset).state;
         # Because the temperature sensor is partly within an enclosure with othe electronics, the measured 
         # temperature will be higher than the real room temperature. Monitor real temperature and set an 
         # offset to calibrate the temperature correctly
