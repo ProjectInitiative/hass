@@ -1,0 +1,60 @@
+state_manager:
+  module: state_manager
+  class: StateManager
+  # global: true
+  dependencies:
+    - utils
+
+all_lights:
+  module: all_lights
+  class: AllLights
+  # global: true
+  dependencies:
+    - utils
+
+# virtual_switch:
+#   module: all_lights
+#   class: VirtualSwitch
+#   # global: true
+#   dependencies:
+#     - utils
+
+
+utils:
+  module: utils
+  global: true
+
+doorbell:
+  module: doorbell_notification
+  class: DoorBellNotification
+  sensor: binary_sensor.front_door_visitor
+
+meeting_indicator:
+  module: meeting_indicator
+  class: MeetingIndicator
+  namespace: default
+  dependencies:
+    - utils
+  sensors: 
+    # office button
+    - sensor.0x00158d0009f4df65_action
+    # test button
+    - sensor.0x00158d00087b83ae_action
+  lights:
+    # office light
+    # - light.0x84fd27fffea66599
+
+    # test light
+    # - light.0xb0ce18140017b647
+    
+    # living room light
+    - light.0xb0ce18140017db76
+
+    # master bedroom lamp
+    # - light.0xb0ce18140017c418
+
+testbutton:
+  module: testbutton_notification
+  class: TestButtonNotification
+  sensor: sensor.test_button_action
+  namespace: default
