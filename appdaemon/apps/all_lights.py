@@ -9,6 +9,7 @@ import utils
 
 
 class AllLights(hass.Hass):
+
     def initialize(self):
         self.log(f'initializing all entities current state')
         self.mqtt = self.get_plugin_api("MQTT")
@@ -19,31 +20,43 @@ class AllLights(hass.Hass):
 
         self.state = self.get_state() 
 
-        lights = []
-        for entity in self.state.values():
-            if entity['entity_id'].split('.')[0] == 'light':
-                # exclude bedroom lights for now...
-                if 'bedroom' not in entity['attributes']['friendly_name'].lower():
-                    lights.append(entity)
-        for light in lights:
-            self.log(pformat(f"{light['attributes']['friendly_name']}"))
+
 
         # utils.create_entity(self, "switch", "my_virtual_switch")
 
         
         # Publish discovery message
-        # self.mqtt.listen_event(self.set_state, topic=f"{self.topic}/set")
         self.mqtt.mqtt_publish(f"{self.topic}/config", self.build_discovery_message(), qos = 0, retain = True)
-        self.mqtt.mqtt_publish(f"{self.topic}/availibility", "online")
+        # self.mqtt.mqtt_publish(f"{self.topic}/availibility", "online", retain=True)
+        # self.mqtt.mqtt_publish(f"{self.topic}/status", "online", retain=True)
+        self.mqtt.mqtt_publish(f"{self.topic}/LWT", "online", retain=True)
+        # self.mqtt.mqtt_publish(f"{self.topic}", "OFF")
+        # self.mqtt.mqtt_publish(f"{self.topic}/set", "OFF")
+        self.mqtt.listen_event(self.set_state, topic=f"{self.topic}/set", retain=True)
+
+        # setup light data
+        self.lights = []
+        for entity in self.state.values():
+            if entity['entity_id'].split('.')[0] == 'light':
+                # exclude bedroom lights for now...
+                if 'bedroom' not in entity['attributes']['friendly_name'].lower():
+                    self.lights.append(entity)
+        for light in self.lights:
+            if 'brightness' in light['attributes'] and light['attributes']['brightness'] != None:
+                self.log(pformat(f"{light['attributes']['friendly_name']} is on"))
+                # only set status, don't set the payload
+                self.mqtt.mqtt_publish(f"{self.topic}", "ON")
+        
 
     def build_discovery_message(self):
         # Define discovery message payload
         message = {
-            "name": "My Virtual Switch",
-            "unique_id": "unique_id_for_switch2",
+            "name": "All house lights",
+            "unique_id": "all.house.lights",
             "command_topic": self.topic+"/set",
             "state_topic": self.topic,  # Optional for reporting state changes
-            "availability_topic": self.topic+"/availability",
+            "availability_topic": self.topic+"/LWT",
+            "optimistic": "true",
             "payload_on": "ON",
             "payload_off": "OFF",
             "state_on": "ON",
@@ -54,21 +67,25 @@ class AllLights(hass.Hass):
     def set_state(self, event_name, data, kwargs):
         if "payload" not in data:
             return
-        payload = json.loads(data["payload"])
-        if payload.get("state") == "ON":
-            # attrs = ["brightness", "color_temp", "white_value", "effect"]
-            attrs = []
-            attributes = {attr: payload[attr] for attr in attrs if attr in payload}
-            if "color" in payload:
-                attributes["hs_color"] = [payload["color"]["h"], payload["color"]["s"]]
+        # payload = json.loads(data["payload"])
+        payload = data["payload"]
 
-            # self.hass.turn_on(self.switch)
-            # self.hass.turn_on(self.light, **attributes)
+        self.mqtt.mqtt_publish(f"{self.topic}", payload)
+        if payload == "ON":
+            for entity in self.lights:
+                light = self.get_entity(entity['entity_id'])
+                self.log(f"Turning on {entity['attributes']['friendly_name']}")
+                light.call_service("turn_on")
+        if payload == "OFF":
+            for entity in self.lights:
+                light = self.get_entity(entity['entity_id'])
+                self.log(f"Turning off {entity['attributes']['friendly_name']}")
+                light.call_service("turn_off")
 
         # elif payload.get("state") == "OFF":
         #     self.hass.turn_off(self.switch)
 
-        self.publish_state(payload)
+            # self.publish_state(payload)
 
     def publish_state(self, payload):
         self.mqtt.mqtt_publish(f"{self.topic}/state", payload=json.dumps(payload))
