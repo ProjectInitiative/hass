@@ -11,12 +11,11 @@ import utils
 class AllLights(hass.Hass):
 
     def initialize(self):
-        self.log(f'initializing all entities current state')
         self.mqtt = self.get_plugin_api("MQTT")
         # self.log(self.mqtt)
 
         # Define MQTT topic for the switch
-        self.topic = "homeassistant/switch/my_virtual_switch"
+        self.topic = "homeassistant/switch/all_lights_switch"
 
         self.state = self.get_state() 
 
