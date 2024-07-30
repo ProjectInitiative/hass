@@ -6,6 +6,7 @@ from enum import Enum
 class DoorState(str, Enum):
     CLOSED = "off"
     OPEN = "on"
+
 class LockState(str, Enum):
     LOCKED = "locked"
     UNLOCKED = "unlocked"
@@ -46,7 +47,7 @@ class AutoLock(hass.Hass):
             if self.enabled and self.get_state(self.door_entity) == DoorState.CLOSED:
                 self.start_timer()
             elif not self.enabled:
-                self.cancel_timer()
+                self._cancel_timer()
         
         elif topic == self.timeout_topic:
             try:
@@ -64,17 +65,17 @@ class AutoLock(hass.Hass):
                 if self.get_state(self.door_entity) == DoorState.CLOSED:
                     self.start_timer()
             elif new == DoorState.OPEN:
-                self.cancel_timer()
+                self._cancel_timer()
 
     def door_state_changed(self, entity, attribute, old, new, kwargs):
         if self.enabled:
             if new == DoorState.CLOSED and old == DoorState.OPEN:
                 self.start_timer()
             elif new == DoorState.OPEN:
-                self.cancel_timer()
+                self._cancel_timer()
 
     def start_timer(self):
-        self.cancel_timer()
+        self._cancel_timer()
         self.timer_handle = self.run_in(self.lock_door, self.lock_delay)
         self.log(f"Started lock timer for {self.lock_delay} seconds")
 
@@ -83,13 +84,13 @@ class AutoLock(hass.Hass):
             door_state = self.get_state(self.door_entity)
             lock_state = self.get_state(self.lock_entity)
 
-            if door_state == DoorState.CLOSED and lock_state == LockState.UNLOCKED:
+            if door_state == DoorState.CLOSED:
                 self.call_service("lock/lock", entity_id=self.lock_entity)
                 self.log(f"Auto-locking door: {self.lock_entity}")
             else:
                 self.log(f"Not locking: Door state is {door_state}, Lock state is {lock_state}")
 
-    def cancel_timer(self):
+    def _cancel_timer(self):
         if self.timer_handle:
             self.cancel_timer(self.timer_handle)
             self.timer_handle = None
