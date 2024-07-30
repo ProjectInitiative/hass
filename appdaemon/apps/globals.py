@@ -12,7 +12,6 @@ class GlobalNotify(hass.Hass):
             if group == "all":
                 continue
             for device in devices:
-                self.log(f"Group: {device}")
                 self.notification_groups["all"].append(device)
 
         self.log("Global Notification Library initialized with groups: " + ", ".join(self.notification_groups.keys()))
