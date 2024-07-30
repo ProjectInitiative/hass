@@ -11,6 +11,20 @@ all_lights:
   # global: true
   dependencies:
     - utils
+garage_automation:
+  module: garage_automation
+  class: GarageAndLightsAutomation
+  phone: device_tracker.pixel_6
+  auto_car: binary_sensor.pixel_6_android_auto
+  bluetooth: sensor.pixel_6_bluetooth_connection
+  # location: device_tracker.pixel_6
+  lights:
+    - light.living_room
+    - light.kitchen
+  garage_door: cover.ratgdov25i_47a1de_door
+  bt_device: "TOYOTA Tacoma"
+  # bt_device: "94:B2:CC:CC:76:A5 (TOYOTA Tacoma)"
+  notification_device: mobile_app_pixel_6
 
 auto_lock_front_door:
   module: auto_lock
