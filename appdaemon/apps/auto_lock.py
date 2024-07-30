@@ -29,13 +29,13 @@ class AutoLock(hass.Hass):
         self.listen_state(self.lock_state_changed, self.lock_entity)
         
         # Subscribe to MQTT topics
-        # self.mqtt.mqtt_subscribe(self.enable_topic, namespace="mqtt")
-        # self.mqtt.mqtt_subscribe(self.timeout_topic, namespace="mqtt")
-        # self.listen_event(self.on_mqtt_message, "MQTT_MESSAGE", namespace="mqtt")
+        self.mqtt.mqtt_subscribe(self.enable_topic, namespace="mqtt")
+        self.mqtt.mqtt_subscribe(self.timeout_topic, namespace="mqtt")
+        self.listen_event(self.on_mqtt_message, "MQTT_MESSAGE", namespace="mqtt")
 
         # Initial MQTT state request
-        # self.mqtt.mqtt_publish(self.enable_topic + "/get", "", namespace="mqtt")
-        # self.mqtt.mqtt_publish(self.timeout_topic + "/get", "", namespace="mqtt")
+        self.mqtt.mqtt_publish(self.enable_topic + "/get", "", namespace="mqtt")
+        self.mqtt.mqtt_publish(self.timeout_topic + "/get", "", namespace="mqtt")
 
     def on_mqtt_message(self, event_name, data, kwargs):
         topic = data["topic"]
