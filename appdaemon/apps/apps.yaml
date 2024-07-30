@@ -39,6 +39,13 @@ door_light_automation:
       - light.0x847127fffebb5407
       # porch light
       - light.0x847127fffebb7194
+    binary_sensor.doors_garage_door:
+      # entrance light
+      - light.0x847127fffebb5407
+      # ratgo light
+      - light.ratgdov25i_47a1de_light
+      # garage light
+      - light.0x847127fffe991128
     binary_sensor.doors_back_door:
       # back porch light
       - light.0x84fd27fffebcd13a
