@@ -9,7 +9,6 @@ class GarageAndLightsAutomation(hass.Hass):
         self.lights = self.args["lights"]
         self.garage_door = self.args["garage_door"]
         self.bt_device = self.args["bt_device"]
-        self.notification_device = self.args["notification_device"]
 
         self.listen_state(self.check_leaving, self.phone)
         self.listen_state(self.check_leaving, self.auto_car)
@@ -75,4 +74,4 @@ class GarageAndLightsAutomation(hass.Hass):
 
     def notify(self, message):
         self.log(f"Sending notification: {message}")
-        self.call_service(f"notify/{self.notification_device}", title="Garage Door Automation", target=self.notification_device, message=message)
+        self.get_app("global_notify").notify(group="all", title="Garage Door Automation", message=message)
