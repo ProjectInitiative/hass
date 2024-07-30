@@ -12,12 +12,23 @@ all_lights:
   dependencies:
     - utils
 
-auto_lock:
+auto_lock_front_door:
   module: auto_lock
   class: AutoLock
-  door_entity: sensor.front_door
+  door_entity: binary_sensor.doors_front_door
   lock_entity: lock.front_door_lock
   enable_entity: input_boolean.auto_lock_enabled
+  enable_topic: home/autolock/front/enable
+  timeout_topic: home/autolock/front/timeout
+
+auto_lock_back_door:
+  module: auto_lock
+  class: AutoLock
+  door_entity: binary_sensor.doors_back_door
+  lock_entity: lock.back_door_lock
+  enable_entity: input_boolean.auto_lock_enabled
+  enable_topic: home/autolock/back/enable
+  timeout_topic: home/autolock/back/timeout
 
 # virtual_switch:
 #   module: all_lights
