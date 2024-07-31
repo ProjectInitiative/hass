@@ -1,6 +1,5 @@
 import appdaemon.plugins.hass.hassapi as hass
 from datetime import datetime, timedelta
-import pytz
 
 class DoorLightAutomation(hass.Hass):
 
@@ -14,7 +13,6 @@ class DoorLightAutomation(hass.Hass):
         self.next_rising_entity = self.args.get("next_rising_entity", "sensor.sun_next_rising")
         self.next_setting_entity = self.args.get("next_setting_entity", "sensor.sun_next_setting")
         self.grace_period = self.args.get("grace_period", 30)  # Grace period in minutes
-        # self.override_entity = self.args.get("override_entity", "input_boolean.door_light_override")
         
         if not self.door_light_map:
             self.log("No door-light mappings configured. Please check your apps.yaml file.", level="WARNING")
@@ -30,10 +28,8 @@ class DoorLightAutomation(hass.Hass):
     def door_opened(self, entity, attribute, old, new, kwargs):
         self.log(f"Door opened: {entity}")
         
-        # Check if it's dark or if override is active
-        # if not self.is_dark() and not self.get_state(self.override_entity) == "on":
         if not self.is_dark():
-            self.log("It's still daytime and override is not active. No lights will be turned on.")
+            self.log("It's still daytime. No lights will be turned on.")
             return
         
         # Get the list of lights for this door
@@ -44,23 +40,27 @@ class DoorLightAutomation(hass.Hass):
                 self.log(f"Turning on light: {light}")
                 self.turn_on(light)
                 
-                # Cancel existing timer if there is one
-                if light in self.light_timers:
-                    self.cancel_timer(self.light_timers[light])
-                
-                # Set new timer to turn off the light after the specified timeout
-                self.light_timers[light] = self.run_in(self.turn_off_light, self.timeout, light=light)
+            # # Cancel existing timer if there is one
+            if entity in self.light_timers:
+                self.cancel_timer(self.light_timers[entity])
+                self.light_timers[entity] = None
+                self.log(f"Cancelled timer for {entity}")
+            
+            # Set new timer to turn off the light after the specified timeout
+            self.log(f"Starting door {entity} lights timer for {self.timeout} seconds")
+            self.light_timers[entity] = self.run_in(self.turn_off_lights, self.timeout, lights=lights)
         else:
             self.log(f"No lights configured for door: {entity}")
 
-    def turn_off_light(self, kwargs):
-        light = kwargs["light"]
-        self.log(f"Turning off light: {light}")
-        self.turn_off(light)
-        del self.light_timers[light]
+    def turn_off_lights(self, kwargs):
+        self.log("turning off lights?????")
+        # lights = kwargs["lights"]
+        # for light in lights:
+        #     self.log(f"Turning off light: {light}")
+        #     self.turn_off(light)
 
     def is_dark(self):
-        now = self.datetime()
+        now = self.get_now()
         next_rising = self.parse_iso_datetime(self.get_state(self.next_rising_entity))
         next_setting = self.parse_iso_datetime(self.get_state(self.next_setting_entity))
         
@@ -84,9 +84,14 @@ class DoorLightAutomation(hass.Hass):
     def sun_down(self):
         return self.get_state(self.sun_entity) == "below_horizon"
 
+    def get_now(self):
+        return self.datetime()
+
     def parse_iso_datetime(self, dt_string):
         try:
-            return datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+            # Parse the datetime string and make it timezone-aware
+            dt = datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+            return dt
         except ValueError:
             self.log(f"Error parsing datetime: {dt_string}", level="ERROR")
             return None
