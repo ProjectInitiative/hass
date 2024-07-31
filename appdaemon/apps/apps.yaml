@@ -1,7 +1,12 @@
+global_automation_manager:
+  module: automation_manager
+  class: AutomationManager
+  global: true
+
 global_notify:
-  module: globals
+  module: global_notify
   class: GlobalNotify
-  # global: true
+  global: true
   groups:
     family:
       - mobile_app_pixel_6
@@ -35,28 +40,18 @@ garage_automation:
     # ratgdo light
     - light.ratgdov25i_47a1de_light
   garage_door: cover.ratgdov25i_47a1de_door
-  bt_device: "TOYOTA Tacoma"
-  # bt_device: "94:B2:CC:CC:76:A5 (TOYOTA Tacoma)"
+  bt_device: "94:B2:CC:CC:76:A5 (TOYOTA Tacoma)"
   dependencies:
     - global_notify
 
-auto_lock_front_door:
+auto_lock_doors:
   module: auto_lock
   class: AutoLock
-  door_entity: binary_sensor.doors_front_door
-  lock_entity: lock.front_door_lock
-  enable_entity: input_boolean.auto_lock_enabled
+  door_lock_map: 
+    binary_sensor.doors_front_door: lock.front_door_lock
+    binary_sensor.doors_back_door: lock.back_door_lock
   enable_topic: home/autolock/front/enable
   timeout_topic: home/autolock/front/timeout
-
-auto_lock_back_door:
-  module: auto_lock
-  class: AutoLock
-  door_entity: binary_sensor.doors_back_door
-  lock_entity: lock.back_door_lock
-  enable_entity: input_boolean.auto_lock_enabled
-  enable_topic: home/autolock/back/enable
-  timeout_topic: home/autolock/back/timeout
 
 door_light_automation:
   module: door_light_automation
@@ -78,11 +73,11 @@ door_light_automation:
       # back porch light
       - light.0x84fd27fffebcd13a
     # Add more door-to-lights mappings as needed
-  timeout: 900  # 15 minutes in seconds, adjust as needed
+  timeout: 5  # 15 minutes in seconds, adjust as needed
   sun_entity: sun.sun
   next_rising_entity: sensor.sun_next_rising
   next_setting_entity: sensor.sun_next_setting
-  grace_period: 30  # Grace period in minutes
+  grace_period: 60  # Grace period in minutes
   # override_entity: input_boolean.door_light_override
 
 # virtual_switch:

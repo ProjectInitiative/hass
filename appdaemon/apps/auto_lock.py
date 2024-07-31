@@ -1,6 +1,5 @@
 import appdaemon.plugins.mqtt.mqttapi as mqtt
 import appdaemon.plugins.hass.hassapi as hass
-import json
 from enum import Enum
 
 class DoorState(str, Enum):
@@ -14,20 +13,26 @@ class LockState(str, Enum):
 class AutoLock(hass.Hass):
     def initialize(self):
         self.mqtt = self.get_plugin_api("MQTT")
-        self.door_entity = self.args["door_entity"]
-        self.lock_entity = self.args["lock_entity"]
+        self.door_lock_map = self.args.get("door_lock_map", {})
+        self.lock_door_map = dict(reversed(item) for item in self.door_lock_map.items())
         self.enable_topic = self.args["enable_topic"]
         self.timeout_topic = self.args["timeout_topic"]
         
         self.enabled = True
         self.lock_delay = 600  # Default 10 minutes in seconds
         
-        self.timer_handle = None
+        if not self.door_lock_map:
+            self.log("No door-lock mappings configured. Please check your apps.yaml file.", level="WARNING")
+            return
 
-        # Listen for state changes
-        self.listen_state(self.door_state_changed, self.door_entity)
-        self.listen_state(self.lock_state_changed, self.lock_entity)
-        
+        # Dictionary to store timers for each door
+        self.door_timers = {}
+
+        # Set up listeners for each door and lock
+        for door, lock in self.door_lock_map.items():
+            self.listen_state(self.door_state_changed, door)
+            self.listen_state(self.lock_state_changed, lock)
+
         # Subscribe to MQTT topics
         self.mqtt.mqtt_subscribe(self.enable_topic, namespace="mqtt")
         self.mqtt.mqtt_subscribe(self.timeout_topic, namespace="mqtt")
@@ -60,38 +65,38 @@ class AutoLock(hass.Hass):
 
     def lock_state_changed(self, entity, attribute, old, new, kwargs):
         if self.enabled:
-            self.log(f"checking door state: {self.get_state(self.door_entity)}")
-            if new == LockState.UNLOCKED and old == LockState.LOCKED:
-                if self.get_state(self.door_entity) == DoorState.CLOSED:
-                    self.start_timer()
-            elif new == DoorState.OPEN:
-                self._cancel_timer()
+            self.log(f"checking lock {entity} state: {self.get_state(entity)}")
+            if new == LockState.UNLOCKED:
+                if self.get_state(self.lock_door_map[entity]) == DoorState.CLOSED:
+                    self.start_timer(self.lock_door_map[entity], entity, self.lock_delay)
 
     def door_state_changed(self, entity, attribute, old, new, kwargs):
         if self.enabled:
-            if new == DoorState.CLOSED and old == DoorState.OPEN:
-                self.start_timer()
+            if new == DoorState.CLOSED:
+                self.start_timer(entity, self.door_lock_map[entity], self.lock_delay)
             elif new == DoorState.OPEN:
-                self._cancel_timer()
+                self._cancel_timer(entity)
 
-    def start_timer(self):
-        self._cancel_timer()
-        self.timer_handle = self.run_in(self.lock_door, self.lock_delay)
-        self.log(f"Started lock timer for {self.lock_delay} seconds")
+    def start_timer(self, door_entity, lock_entity, lock_delay):
+        self._cancel_timer(door_entity)
+        self.door_timers[door_entity] = self.run_in(self.lock_door, lock_delay, door_entity=door_entity, lock_entity=lock_entity)
+        self.log(f"Started door {door_entity} lock timer for {lock_delay} seconds")
 
     def lock_door(self, kwargs):
-        if self.enabled:
-            door_state = self.get_state(self.door_entity)
-            lock_state = self.get_state(self.lock_entity)
+        # if self.enabled:
+        door_state = self.get_state(kwargs["door_entity"])
+        lock_entity = kwargs["lock_entity"]
+        lock_state = self.get_state(kwargs["lock_entity"])
 
-            if door_state == DoorState.CLOSED:
-                self.call_service("lock/lock", entity_id=self.lock_entity)
-                self.log(f"Auto-locking door: {self.lock_entity}")
-            else:
-                self.log(f"Not locking: Door state is {door_state}, Lock state is {lock_state}")
+        if door_state == DoorState.CLOSED:
+            self.call_service("lock/lock", entity_id=lock_entity)
+            self.log(f"Auto-locking door: {lock_entity}")
+        else:
+            self.log(f"Not locking: Door state is {door_state}, Lock state is {lock_state}")
 
-    def _cancel_timer(self):
-        if self.timer_handle:
-            self.cancel_timer(self.timer_handle)
-            self.timer_handle = None
-            self.log("Cancelled lock timer")
+    def _cancel_timer(self, door_entity):
+        if door_entity in self.door_timers:
+            self.cancel_timer(self.door_timers[door_entity])
+            self.door_timers[door_entity] = None
+            self.log(f"Cancelled door {door_entity} lock timer")
+
