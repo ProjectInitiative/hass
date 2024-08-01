@@ -44,10 +44,14 @@ class GarageNotifyAutomation(hass.Hass):
 
     def cancel_schedules(self):
         self.log("Cancelling schedule checks")
-        if self.check_handle:
+        if self.check_handle is not None:
             self.cancel_timer(self.check_handle)
-        if self.auto_close_handle:
+            self.check_handle = None
+
+        if self.auto_close_handle is not None:
             self.cancel_timer(self.auto_close_handle)
+            self.auto_close_handle = None
+
         self.final_notify_sent = False
         self.pre_notify_sent = False
 
