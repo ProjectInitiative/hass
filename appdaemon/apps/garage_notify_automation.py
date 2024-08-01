@@ -5,7 +5,8 @@ class GarageNotifyAutomation(hass.Hass):
     def initialize(self):
         self.door_state = "closed"
         self.door_open_time = None
-        self.auto_close_scheduled = False
+        self.final_notify_sent = False
+        self.pre_notify_sent = False
         self.check_handle = None
         self.auto_close_handle = None
 
@@ -19,7 +20,7 @@ class GarageNotifyAutomation(hass.Hass):
         self.listen_event(self.handle_notification_action, "mobile_app_notification_action")
 
     def door_state_change(self, entity, attribute, old, new, kwargs):
-        if new != self.door_state:
+        if new != self.door_state and new != "unavailable" and old != "unavailable":
             self.door_state = new
             self.notify_door_event()
 
@@ -47,20 +48,22 @@ class GarageNotifyAutomation(hass.Hass):
             self.cancel_timer(self.check_handle)
         if self.auto_close_handle:
             self.cancel_timer(self.auto_close_handle)
-        self.auto_close_scheduled = False
+        self.final_notify_sent = False
+        self.pre_notify_sent = False
 
     def check_door_open_duration(self, kwargs):
         if self.door_state == "open" and self.door_open_time:
             duration = self.get_now() - self.door_open_time
             minutes = duration.total_seconds() / 60
 
-            if minutes >= 50 and not self.auto_close_scheduled:
+            if minutes >= 50 and not self.final_notify_sent:
                 message = "Garage door has been open for 50 minutes. It will be closed automatically in 10 minutes."
                 self.send_notification(message, "Garage Door Alert", add_action=True)
-                self.auto_close_scheduled = True
-            elif minutes >= 30:
+                self.final_notify_sent = True
+            elif minutes >= 30 and not self.pre_notify_sent:
                 message = "Garage door has been open for 30 minutes."
                 self.send_notification(message, "Garage Door Alert", add_action=True)
+                self.pre_notify_sent = True
 
     def auto_close_door(self, kwargs):
         if self.door_state == "open":
@@ -70,7 +73,6 @@ class GarageNotifyAutomation(hass.Hass):
         self.garage_utils.close_garage_and_lights()
         self.door_open_time = None
         self.cancel_schedules()
-        self.notify_door_event()
 
     def send_notification(self, message, title, add_action=False):
         data={"actions": [
@@ -89,6 +91,7 @@ class GarageNotifyAutomation(hass.Hass):
             self.close_door()
         elif action == self.notify_action_dismiss_auto_close:
             self.cancel_timer(self.auto_close_handle)
-            self.auto_close_scheduled = False
+            self.final_notify_sent = False
+            self.pre_notify_sent = False
             message = "Auto-close has been dismissed. The garage door will remain open."
             self.send_notification(message, "Auto-close Dismissed")
