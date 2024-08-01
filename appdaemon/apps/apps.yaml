@@ -1,37 +1,33 @@
-global_automation_manager:
-  module: automation_manager
-  class: AutomationManager
+utils:
+  module: utils
   global: true
-
-global_notify:
-  module: global_notify
-  class: GlobalNotify
-  global: true
-  groups:
-    family:
-      - mobile_app_pixel_6
 
 state_manager:
   module: state_manager
   class: StateManager
-  # global: true
   dependencies:
     - utils
+
+global_automation_manager:
+  module: automation_manager
+  class: AutomationManager
+
+global_notify:
+  module: global_notify
+  class: GlobalNotify
+  groups:
+    family:
+      - mobile_app_pixel_6
 
 all_lights:
   module: all_lights
   class: AllLights
-  # global: true
   dependencies:
     - utils
 
-garage_automation:
-  module: garage_automation
-  class: GarageAndLightsAutomation
-  phone: device_tracker.pixel_6
-  auto_car: binary_sensor.pixel_6_android_auto
-  bluetooth: sensor.pixel_6_bluetooth_connection
-  # location: device_tracker.pixel_6
+garage_utils:
+  module: garage_utils
+  class: GarageUtils
   lights:
     # entrance light
     - light.0x847127fffebb5407
@@ -40,9 +36,28 @@ garage_automation:
     # ratgdo light
     - light.ratgdov25i_47a1de_light
   garage_door: cover.ratgdov25i_47a1de_door
+  dependencies:
+    - global_notify
+
+garage_notify_automation:
+  module: garage_notify_automation
+  class: GarageNotifyAutomation
+  garage_door: cover.ratgdov25i_47a1de_door
+  dependencies:
+    - global_notify
+    - garage_utils
+
+garage_automation:
+  module: garage_automation
+  class: GarageAndLightsAutomation
+  phone: device_tracker.pixel_6
+  geocoded_location: sensor.pixel_6_geocoded_location
+  auto_car: binary_sensor.pixel_6_android_auto
+  bluetooth: sensor.pixel_6_bluetooth_connection
   bt_device: "94:B2:CC:CC:76:A5 (TOYOTA Tacoma)"
   dependencies:
     - global_notify
+    - garage_utils
 
 auto_lock_doors:
   module: auto_lock
@@ -88,9 +103,6 @@ door_light_automation:
 #     - utils
 
 
-utils:
-  module: utils
-  global: true
 
 doorbell:
   module: doorbell_notification
