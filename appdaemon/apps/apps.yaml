@@ -43,6 +43,7 @@ garage_notify_automation:
   module: garage_notify_automation
   class: GarageNotifyAutomation
   garage_door: cover.ratgdov25i_47a1de_door
+  garage_door_remote_lock: lock.ratgdov25i_47a1de_lock_remotes
   dependencies:
     - global_notify
     - garage_utils
