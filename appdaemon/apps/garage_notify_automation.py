@@ -9,6 +9,7 @@ class GarageNotifyAutomation(hass.Hass):
         self.pre_notify_sent = False
         self.check_handle = None
         self.auto_close_handle = None
+        self.auto_lock_handler = None
 
         self.notify_action_close_now = str(uuid.uuid4())
         self.notify_action_dismiss_auto_close = str(uuid.uuid4())
@@ -16,7 +17,10 @@ class GarageNotifyAutomation(hass.Hass):
         self.notify_app = self.get_app("global_notify")
         self.garage_utils = self.get_app("garage_utils")
 
-        self.listen_state(self.door_state_change, self.args["garage_door"])
+        self.garage_door = self.args["garage_door"]
+        self.garage_door_remote_lock = self.args["garage_door_remote_lock"]
+
+        self.listen_state(self.door_state_change, self.garage_door)
         self.listen_event(self.handle_notification_action, "mobile_app_notification_action")
 
     def door_state_change(self, entity, attribute, old, new, kwargs):
@@ -25,11 +29,13 @@ class GarageNotifyAutomation(hass.Hass):
             self.notify_door_event()
 
             if new == "open":
+                self.enable_door_remote()
                 self.door_open_time = self.get_now()
                 self.schedule_checks()
             # explicitly check for closed since it can report as unavailable
             elif new == "closed":
                 self.door_open_time = None
+                self.enable_door_remote()
                 self.cancel_schedules()
 
     def notify_door_event(self):
@@ -77,6 +83,14 @@ class GarageNotifyAutomation(hass.Hass):
         self.garage_utils.close_garage_and_lights()
         self.door_open_time = None
         self.cancel_schedules()
+
+    def enable_door_remote(self):
+        if self.garage_door_remote_lock is not None:
+            self.cancel_timer(self.auto_lock_handler)
+            self.auto_lock_handler = None
+            self.log("Unlocking garage door remotes for 10 min")
+            self.call_service("lock/unlock", entity_id=self.garage_door_remote_lock)
+            self.auto_lock_handler = self.run_in(callback=self.call_service, service="lock/lock", entity_id=self.garage_door_remote_lock, delay=10 * 60) # run in 10 min
 
     def send_notification(self, message, title, add_action=False):
         data={"actions": [
