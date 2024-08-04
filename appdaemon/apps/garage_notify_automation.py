@@ -23,6 +23,8 @@ class GarageNotifyAutomation(hass.Hass):
         self.listen_state(self.door_state_change, self.garage_door)
         self.listen_event(self.handle_notification_action, "mobile_app_notification_action")
 
+        self.enable_door_remote()
+
     def door_state_change(self, entity, attribute, old, new, kwargs):
         if new != self.door_state and new != "unavailable" and old != "unavailable":
             self.door_state = new
@@ -90,7 +92,10 @@ class GarageNotifyAutomation(hass.Hass):
             self.auto_lock_handler = None
             self.log("Unlocking garage door remotes for 10 min")
             self.call_service("lock/unlock", entity_id=self.garage_door_remote_lock)
-            self.auto_lock_handler = self.run_in(callback=self.call_service, service="lock/lock", entity_id=self.garage_door_remote_lock, delay=10 * 60) # run in 10 min
+            self.auto_lock_handler = self.run_in(self.lock_door_remote, 10 * 60) # run in 10 min
+
+    def lock_door_remote(self, kwargs):
+        self.call_service("lock/lock", entity_id=self.garage_door_remote_lock)
 
     def send_notification(self, message, title, add_action=False):
         data={"actions": [
