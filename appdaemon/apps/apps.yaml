@@ -2,11 +2,17 @@ utils:
   module: utils
   global: true
 
-state_manager:
-  module: state_manager
-  class: StateManager
+global_state_manager:
+  module: global_state_manager
+  class: GlobalStateManager
   dependencies:
     - utils
+
+# state_manager:
+#   module: state_manager
+#   class: StateManager
+#   dependencies:
+#     - utils
 
 global_automation_manager:
   module: automation_manager
@@ -134,8 +140,30 @@ meeting_indicator:
     # master bedroom lamp
     # - light.0xb0ce18140017c418
 
+entity_monitor:
+  module: entity_monitor
+  class: EntityMonitor
+  entities:
+    # main ups 1
+    - switch.0x282c02bfffea5d6a
+    # main ups 2
+    - switch.0x282c02bfffea5c8a
+    # network ups
+    - switch.0x282c02bfffea548c
+    # test switch
+    - switch.0x282c02bfffea274a
+
+light_group_controller:
+  module: light_group_controller
+  class: LightGroupController
+  switches:
+    - switch.living_room
+    - switch.bedroom
+    - switch.kitchen
+
 testbutton:
   module: testbutton_notification
   class: TestButtonNotification
   sensor: sensor.test_button_action
   namespace: default
+
