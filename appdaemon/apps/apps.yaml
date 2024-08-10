@@ -152,6 +152,8 @@ entity_monitor:
     - switch.0x282c02bfffea548c
     # test switch
     - switch.0x282c02bfffea274a
+  check_interval: 120
+  enable_laste_seen: false
 
 light_group_controller:
   module: light_group_controller
