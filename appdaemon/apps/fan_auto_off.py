@@ -45,10 +45,12 @@ class FanAutoOff(hass.Hass):
         if cutoff_time:
             cutoff_time = self.parse_time(cutoff_time)
             cutoff_seconds = self.get_seconds_until_time(current_time, cutoff_time)
+            self.log(f"Cutoff time for {entity}: {cutoff_time}, seconds until cutoff: {cutoff_seconds}")
         
         time_limit_seconds = None
         if time_limit:
             time_limit_seconds = time_limit * 60
+            self.log(f"Time limit for {entity}: {time_limit} minutes, {time_limit_seconds} seconds")
         
         if cutoff_seconds is not None and time_limit_seconds is not None:
             seconds_until_off = min(cutoff_seconds, time_limit_seconds)
@@ -61,7 +63,7 @@ class FanAutoOff(hass.Hass):
             return
         
         self.fan_timers[entity] = self.run_in(self.turn_off_fan, seconds_until_off, fan=entity)
-        self.log(f"Scheduled {entity} to turn off in {seconds_until_off} seconds")
+        self.log(f"Scheduled {entity} to turn off in {seconds_until_off} seconds (at {current_time + timedelta(seconds=seconds_until_off)})")
     
     def turn_off_fan(self, kwargs):
         fan = kwargs["fan"]
@@ -88,10 +90,15 @@ class FanAutoOff(hass.Hass):
         else:  # crosses midnight
             return check_time >= time1 or check_time < time2
 
+
     def get_seconds_until_time(self, current_time, target_time):
         target_datetime = datetime.combine(current_time.date(), target_time)
         target_datetime = self.timezone.localize(target_datetime)
+    
         if target_datetime <= current_time:
+            # If the target time is earlier than the current time,
+            # it means we're targeting the next day
             target_datetime += timedelta(days=1)
+    
         time_diff = target_datetime - current_time
         return time_diff.total_seconds()
