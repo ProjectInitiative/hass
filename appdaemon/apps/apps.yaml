@@ -155,13 +155,25 @@ entity_monitor:
   check_interval: 120
   enable_laste_seen: false
 
-light_group_controller:
-  module: light_group_controller
-  class: LightGroupController
-  switches:
-    - switch.living_room
-    - switch.bedroom
-    - switch.kitchen
+# light_group_controller:
+#   module: light_group_controller
+#   class: LightGroupController
+#   switches:
+#     - switch.living_room
+#     - switch.bedroom
+#     - switch.kitchen
+
+fan_auto_off:
+  module: fan_auto_off
+  class: FanAutoOff
+  fans:
+    fan.nursery_fan:
+      time_limit: 120  # 2 hours in minutes
+      cutoff_time: "21:30:00" 
+    fan.master_bedroom_fan:
+      enforcement_time: "22:30:00"
+      time_limit: 180  # 3 hours in minutes
+      cutoff_time: "02:00:00"
 
 testbutton:
   module: testbutton_notification
