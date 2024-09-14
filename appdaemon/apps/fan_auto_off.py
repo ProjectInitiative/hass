@@ -10,6 +10,13 @@ class FanAutoOff(hass.Hass):
         
         for fan, settings in self.fans.items():
             self.listen_state(self.fan_state_changed, fan)
+            # Check initial state
+            self.check_initial_state(fan)
+
+    def check_initial_state(self, fan):
+        current_state = self.get_state(fan)
+        if current_state == "on":
+            self.fan_state_changed(fan, "state", "off", "on", None)
     
     def fan_state_changed(self, entity, attribute, old, new, kwargs):
         if new == "on" and old != "on":
