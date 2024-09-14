@@ -171,8 +171,9 @@ fan_auto_off:
       time_limit: 120  # 2 hours in minutes
       cutoff_time: "21:30:00" 
     fan.master_bedroom_fan:
-      enforcement_time: "21:00:00"
-      time_limit: 300  # 5 hours in minutes
+      enforcement_time_start: "21:00:00"
+      enforcement_time_end: "06:00:00"
+      time_limit: 150  # 2.5 hours in minutes
       cutoff_time: "02:00:00"
 
 testbutton:

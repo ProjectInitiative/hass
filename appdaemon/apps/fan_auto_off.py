@@ -6,25 +6,27 @@ class FanAutoOff(hass.Hass):
     def initialize(self):
         self.fans = self.args.get("fans", {})
         self.fan_timers = {}
-        self.daily_resets = {}
+        # self.daily_resets = {}
         self.timezone = pytz.timezone(self.get_timezone())
         
         for fan, settings in self.fans.items():
             self.listen_state(self.fan_state_changed, fan)
-            enforcement_time = settings.get("enforcement_time")
-            if enforcement_time:
-                self.daily_resets[fan] = self.run_daily(self.reset_timer, self.parse_time(enforcement_time), fan=fan)
+            # enforcement_time = settings.get("enforcement_time")
+            # if enforcement_time:
+            #     self.daily_resets[fan] = self.run_daily(self.reset_timer, self.parse_time(enforcement_time), fan=fan)
     
     def fan_state_changed(self, entity, attribute, old, new, kwargs):
         if new == "on" and old != "on":
             current_time = self.get_now().astimezone(self.timezone)
             settings = self.fans[entity]
-            enforcement_time = settings.get("enforcement_time")
+            enforcement_time_start = settings.get("enforcement_time_start")
+            enforcement_time_end = settings.get("enforcement_time_end")
             
             should_enforce = True
-            if enforcement_time:
-                enforcement_time = self.parse_time(enforcement_time)
-                should_enforce = self.is_time_between(current_time.time(), enforcement_time, enforcement_time)
+            if enforcement_time_start and enforcement_time_end:
+                enforcement_time_start = self.parse_time(enforcement_time_start)
+                enforcement_time_end = self.parse_time(enforcement_time_end)
+                should_enforce = self.is_time_between(current_time.time(), enforcement_time_start, enforcement_time_end)
             
             if should_enforce:
                 self.schedule_fan_off(entity, current_time)
