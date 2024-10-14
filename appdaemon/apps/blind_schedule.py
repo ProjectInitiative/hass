@@ -4,15 +4,24 @@ from datetime import time
 class BlindSchedule(hass.Hass):
     def initialize(self):
         self.blinds = self.args.get("blinds", {})
-        self.default_open_time = self.parse_time(self.args.get("default_open_time", "08:00:00"))
-        self.default_close_time = self.parse_time(self.args.get("default_close_time", "20:00:00"))
+        self.default_open_time = self.parse_time_input(self.args.get("default_open_time", "08:00:00"))
+        self.default_close_time = self.parse_time_input(self.args.get("default_close_time", "20:00:00"))
 
         for entity_id, config in self.blinds.items():
-            open_time = self.parse_time(config.get("open_time", self.default_open_time))
-            close_time = self.parse_time(config.get("close_time", self.default_close_time))
+            open_time = self.parse_time_input(config.get("open_time", self.default_open_time))
+            close_time = self.parse_time_input(config.get("close_time", self.default_close_time))
             
             self.run_daily(self.open_blind, open_time, entity_id=entity_id)
             self.run_daily(self.close_blind, close_time, entity_id=entity_id)
+
+    def parse_time_input(self, time_input):
+        if isinstance(time_input, str):
+            return self.parse_time(time_input)
+        elif isinstance(time_input, time):
+            return time_input
+        else:
+            self.log(f"Invalid time input: {time_input}. Using default.", level="WARNING")
+            return self.parse_time("00:00:00")
 
     def open_blind(self, kwargs):
         entity_id = kwargs["entity_id"]
