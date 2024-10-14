@@ -176,6 +176,28 @@ fan_auto_off:
       time_limit: 150  # 2.5 hours in minutes
       cutoff_time: "02:00:00"
 
+    
+blind_schedule:
+  module: blind_schedule
+  class: BlindSchedule
+  default_open_time: "07:30:00"
+  default_close_time: "18:30:00"
+  blinds:
+    # office
+    cover.blind_tilt_d437:
+      close_up: false
+    # living room
+    cover.blind_tilt_49f0:
+      close_up: true
+    # dining room
+    cover.blind_tilt_9f22:
+      close_up: true
+    # backdoor
+    cover.blind_tilt_b643:
+      close_up: true
+      close_time: "22:30:00"
+
+
 testbutton:
   module: testbutton_notification
   class: TestButtonNotification
