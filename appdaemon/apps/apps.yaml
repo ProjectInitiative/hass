@@ -193,10 +193,12 @@ blind_schedule:
         direction: up
       triggers:
         - time: "07:30:00"
+          percentage: 50
+
+        - time: "08:30:00"
           action: open
 
         - time: "18:30:00"
-          action: close
           percentage: 50
 
         - time: "22:30:00"
