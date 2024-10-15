@@ -180,22 +180,43 @@ fan_auto_off:
 blind_schedule:
   module: blind_schedule
   class: BlindSchedule
-  default_open_time: "07:30:00"
-  default_close_time: "18:30:00"
+  groups:
+    living_area:
+      members:
+        # living room
+        - cover.blind_tilt_49f0
+        # dining room
+        - cover.blind_tilt_9f22
+        # backdoor
+        - cover.blind_tilt_b643
+      defaults:
+        direction: up
+      triggers:
+        - time: "07:30:00"
+          action: open
+
+        - time: "18:30:00"
+          action: close
+          percentage: 50
+
+        - time: "22:30:00"
+          action: close
+
+        # - light_level:
+        #     condition: above
+        #     level: 8
+        #   action: close
+
   blinds:
     # office
     cover.blind_tilt_d437:
-      close_up: false
-    # living room
-    cover.blind_tilt_49f0:
-      close_up: true
-    # dining room
-    cover.blind_tilt_9f22:
-      close_up: true
-    # backdoor
-    cover.blind_tilt_b643:
-      close_up: true
-      close_time: "22:30:00"
+      defaults:
+        direction: down
+      triggers:
+        - time: "08:00:00"
+          action: open
+        - time: "17:15:00"
+          action: close
 
 
 testbutton:
