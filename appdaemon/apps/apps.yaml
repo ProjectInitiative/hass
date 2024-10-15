@@ -195,7 +195,7 @@ blind_schedule:
         - time: "07:30:00"
           percentage: 50
 
-        - time: "08:30:00"
+        - time: "10:00:00"
           action: open
 
         - time: "18:30:00"
