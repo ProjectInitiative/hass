@@ -198,10 +198,13 @@ blind_schedule:
         - time: "10:00:00"
           action: open
 
-        - time: "18:30:00"
+        - time: "15:30:00"
+          percentage: 75
+
+        - time: "17:30:00"
           percentage: 50
 
-        - time: "22:30:00"
+        - time: "19:30:00"
           action: close
 
         # - light_level:
@@ -210,6 +213,16 @@ blind_schedule:
         #   action: close
 
   blinds:
+    # back door
+    cover.blind_tilt_b643:
+      defaults:
+        direction: up
+      triggers:
+        - time: "21:00:00"
+          percentage: 50
+        - time: "22:30:00"
+          action: close
+
     # office
     cover.blind_tilt_d437:
       defaults:
