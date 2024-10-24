@@ -7,6 +7,7 @@ global_state_manager:
   class: GlobalStateManager
   dependencies:
     - utils
+  storage_path: "/states"
 
 # state_manager:
 #   module: state_manager
@@ -192,8 +193,11 @@ blind_schedule:
       defaults:
         direction: up
       triggers:
-        - time: "07:30:00"
+        - time: "07:00:00"
           percentage: 50
+
+        - time: "08:45:00"
+          percentage: 75
 
         - time: "10:00:00"
           action: open
@@ -201,10 +205,10 @@ blind_schedule:
         - time: "15:30:00"
           percentage: 75
 
-        - time: "17:30:00"
+        - time: "17:00:00"
           percentage: 50
 
-        - time: "19:30:00"
+        - time: "18:15:00"
           action: close
 
         # - light_level:
@@ -218,6 +222,8 @@ blind_schedule:
       defaults:
         direction: up
       triggers:
+        - time: "06:00:00"
+          percentage: 50
         - time: "21:00:00"
           percentage: 50
         - time: "22:30:00"
