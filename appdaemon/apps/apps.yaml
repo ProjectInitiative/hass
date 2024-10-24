@@ -193,7 +193,7 @@ blind_schedule:
       defaults:
         direction: up
       triggers:
-        - time: "07:00:00"
+        - time: "07:30:00"
           percentage: 50
 
         - time: "08:45:00"
