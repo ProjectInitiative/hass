@@ -230,17 +230,17 @@ blind_schedule:
           action: close
 
     # office
-    cover.blind_tilt_d437:
-      defaults:
-        direction: down
-      triggers:
-        - time: "08:00:00"
-          action: open
-        - time: "14:30:00"
-          percentage: 75
-          direction: up
-        - time: "17:15:00"
-          action: close
+    # cover.blind_tilt_d437:
+    #   defaults:
+    #     direction: down
+    #   triggers:
+    #     - time: "08:00:00"
+    #       action: open
+    #     - time: "14:30:00"
+    #       percentage: 75
+    #       direction: up
+    #     - time: "17:15:00"
+    #       action: close
 
 
 testbutton:
