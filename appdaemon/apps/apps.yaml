@@ -29,6 +29,8 @@ global_notify:
     critical_alert_phones:
       android:
         - mobile_app_pixel_6
+      ios:
+        - mobile_app_iphone
 
 all_lights:
   module: all_lights
