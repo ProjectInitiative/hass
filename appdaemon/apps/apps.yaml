@@ -249,7 +249,7 @@ water_sensor_monitor:
   module: water_sensor_monitor
   class: WaterSensorMonitor
   notification_group: "critical_alert_phones"
-  send_tts: true
+  send_tts: false
   tts_max_volume: true
   water_sensors:
     - binary_sensor.0xa4c138374c40733e_water_leak # AC Overflow Pan
