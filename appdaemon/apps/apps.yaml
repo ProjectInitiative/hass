@@ -24,7 +24,11 @@ global_notify:
   class: GlobalNotify
   groups:
     family:
-      - mobile_app_pixel_6
+      android:
+        - mobile_app_pixel_6
+    critical_alert_phones:
+      android:
+        - mobile_app_pixel_6
 
 all_lights:
   module: all_lights
@@ -241,6 +245,26 @@ blind_schedule:
     #       direction: up
     #     - time: "17:15:00"
     #       action: close
+water_sensor_monitor: 
+  module: water_sensor_monitor
+  class: WaterSensorMonitor
+  notification_group: "critical_alert_phones"
+  send_tts: true
+  tts_max_volume: true
+  water_sensors:
+    - binary_sensor.0xa4c138374c40733e_water_leak # AC Overflow Pan
+    - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electical
+    - binary_sensor.0xa4c1381e21b2137d_water_leak # Water Heater Overflow Pan
+    - binary_sensor.0xa4c1386467236d8a_water_leak # Water softener
+    - binary_sensor.0xa4c1384dbe966aa7_water_leak # Kitchen sink
+    - binary_sensor.0xa4c138bbf2bee4de_water_leak # Downstairs bathroom sink
+    - binary_sensor.0xa4c138a71398ed05_water_leak # Downstairs bathroom toilet
+    - binary_sensor.0xa4c138b035472f64_water_leak # Master bathroom sink 1
+    - binary_sensor.0xa4c138f93176fa30_water_leak # Master bathroom sink 2
+    - binary_sensor.0xa4c1384958e7520b_water_leak # Master bathroom toilet
+    - binary_sensor.0xa4c138d0dff30669_water_leak # Upstairs bathroom sink
+    - binary_sensor.0xa4c138e84927fbb5_water_leak # Upstairs bathroom toilet
+    - binary_sensor.0xa4c1384dfb580bc7_water_leak # Washer Overflow Pan
 
 
 testbutton:
