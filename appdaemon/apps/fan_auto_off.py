@@ -6,7 +6,7 @@ class FanAutoOff(hass.Hass):
     def initialize(self):
         self.fans = self.args.get("fans", {})
         self.fan_timers = {}
-        self.timezone = pytz.timezone(self.get_timezone())
+        self.timezone = self.get_timezone()
         
         for fan, settings in self.fans.items():
             self.listen_state(self.fan_state_changed, fan)

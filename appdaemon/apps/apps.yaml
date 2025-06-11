@@ -2,6 +2,11 @@ utils:
   module: utils
   global: true
 
+area_handler:
+  module: area_handler
+  class: AreaHandler
+  priority: 10
+
 # global_state_manager:
 #   module: global_state_manager
 #   class: GlobalStateManager
