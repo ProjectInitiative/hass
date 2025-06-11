@@ -38,6 +38,38 @@ all_lights:
   dependencies:
     - utils
 
+# Configure the new state linker app
+simple_state_linker:
+  module: simple_state_linker
+  class: SimpleStateLinker
+  
+  # A list of groups to link. Each group is processed independently.
+  groups:
+    # --- Example 1: Area-based linking ---
+    # Links all 'light' and 'switch' entities in the "Living Room" area.
+    # If any light or switch in the Living Room turns on, they all turn on.
+    # - area: "Living Room"
+    #   # Optional: Specify which domains to include. Defaults to ["light"].
+    #   domains: ["light", "switch"]
+
+    # --- Example 2: Manual entity list ---
+    # Links a specific set of lights, perhaps in different areas.
+    # If the sofa lamp turns on, the other two will also turn on.
+    # - entities:
+    #     - light.sofa_lamp
+    #     - light.tv_backlight
+    #     - light.bookshelf_light
+
+    # --- Example 3: Another area, with default domain ('light') ---
+    # This will link only the 'light' entities in the office area.
+    - area: "Kitchen"
+      domain: ["light"]
+    - area: "Office"
+    - area: "Game room"
+      domains: ["light"]
+      exclude:
+        - light.0x847127fffebb7d2f # Stair lights
+
 garage_utils:
   module: garage_utils
   class: GarageUtils
