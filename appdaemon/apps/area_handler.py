@@ -1,3 +1,4 @@
+# Reference: https://github.com/home-assistant/core/pull/37376#issuecomment-1902087404
 import appdaemon.plugins.hass.hassapi as hass
 import json
 
