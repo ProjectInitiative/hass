@@ -2,12 +2,12 @@ utils:
   module: utils
   global: true
 
-global_state_manager:
-  module: global_state_manager
-  class: GlobalStateManager
-  dependencies:
-    - utils
-  storage_path: "/states"
+# global_state_manager:
+#   module: global_state_manager
+#   class: GlobalStateManager
+#   dependencies:
+#     - utils
+#   storage_path: "/states"
 
 # state_manager:
 #   module: state_manager
