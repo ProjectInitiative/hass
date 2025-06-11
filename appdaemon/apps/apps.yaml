@@ -65,6 +65,11 @@ simple_state_linker:
     #     - light.tv_backlight
     #     - light.bookshelf_light
 
+    - entities: # garage
+      - light.0x847127fffe991128 # garage light
+      - light.ratgdov25i_47a1de_light # garage door light
+      - light.0x00124b00226d6999 # workbench light
+
     # --- Example 3: Another area, with default domain ('light') ---
     # This will link only the 'light' entities in the office area.
     - area: "Kitchen"
