@@ -311,7 +311,7 @@ blind_schedule:
     # office
     cover.blind_tilt_d437:
       defaults:
-        direction: down
+        direction: up
       triggers:
         # - time: "08:00:00"
         #   action: open
@@ -324,6 +324,7 @@ blind_schedule:
             condition: below
             level: 2
           action: close
+          direction: up
         - light_level:
             condition: above
             level: 2
