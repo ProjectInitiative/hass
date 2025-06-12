@@ -308,7 +308,7 @@ blind_schedule:
         - time: "22:30:00"
           action: close
 
-    office:
+    # office
     cover.blind_tilt_d437:
       defaults:
         direction: down
