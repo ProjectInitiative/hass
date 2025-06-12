@@ -84,9 +84,6 @@ class DoorLightAutomation(hass.Hass):
     def sun_down(self):
         return self.get_state(self.sun_entity) == "below_horizon"
 
-    def get_now(self):
-        return self.datetime()
-
     def parse_iso_datetime(self, dt_string):
         try:
             # Parse the datetime string and make it timezone-aware
