@@ -269,7 +269,7 @@ blind_schedule:
         # Fires when light drops back below 7, returning from the "angled" state.
         - light_level:
             condition: below
-            level: 7
+            level: 8
           action: open
 
         # - time: "07:30:00"
@@ -308,18 +308,35 @@ blind_schedule:
         - time: "22:30:00"
           action: close
 
-    # office
-    # cover.blind_tilt_d437:
-    #   defaults:
-    #     direction: down
-    #   triggers:
-    #     - time: "08:00:00"
-    #       action: open
-    #     - time: "14:30:00"
-    #       percentage: 75
-    #       direction: up
-    #     - time: "17:15:00"
-    #       action: close
+    office:
+    cover.blind_tilt_d437:
+      defaults:
+        direction: down
+      triggers:
+        # - time: "08:00:00"
+        #   action: open
+        # - time: "14:30:00"
+        #   percentage: 75
+        #   direction: up
+        # - time: "17:15:00"
+        #   action: close
+        - light_level:
+            condition: below
+            level: 2
+          action: close
+        - light_level:
+            condition: above
+            level: 2
+          action: open
+        - light_level:
+            condition: above
+            level: 6
+          percentage: 75
+        - light_level:
+            condition: below
+            level: 6
+          action: open
+
 water_sensor_monitor: 
   module: water_sensor_monitor
   class: WaterSensorMonitor
