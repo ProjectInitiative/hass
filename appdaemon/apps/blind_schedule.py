@@ -1,14 +1,16 @@
 import appdaemon.plugins.hass.hassapi as hass
-from datetime import time
+from datetime import time, datetime
 
 class BlindSchedule(hass.Hass):
     def initialize(self):
         self.log("Initializing BlindSchedule", level="INFO")
         self.groups = self.args.get("groups", {})
         self.blinds = self.args.get("blinds", {})
+        self.last_light_triggered = {}  # Dictionary to track debounce
         self.global_defaults = {
             "direction": "down",
             "percentage": 50,
+            "debounce": 300,  # Default debounce period in seconds (5 minutes)
         }
         self.log(f"Global defaults: {self.global_defaults}", level="DEBUG")
 
@@ -56,10 +58,12 @@ class BlindSchedule(hass.Hass):
                 condition = trigger_config["light_level"].get("condition", "above")
                 level = trigger_config["light_level"].get("level", 5)
                 self.log(f"Setting up light level trigger for {entity_id}: {condition} {level}", level="INFO")
+                # Pass the entity_id of the blind to the callback
+                callback_kwargs = {"blind_entity_id": entity_id, "config": trigger_config}
                 if condition == "above":
-                    self.listen_state(self.light_level_callback, light_sensor, above=level, entity_id=entity_id, config=trigger_config)
+                    self.listen_state(self.light_level_callback, light_sensor, new=lambda x: float(x) > level, **callback_kwargs)
                 elif condition == "below":
-                    self.listen_state(self.light_level_callback, light_sensor, below=level, entity_id=entity_id, config=trigger_config)
+                    self.listen_state(self.light_level_callback, light_sensor, new=lambda x: float(x) < level, **callback_kwargs)
             else:
                 self.log(f"Light sensor {light_sensor} does not exist", level="WARNING")
 
@@ -92,8 +96,21 @@ class BlindSchedule(hass.Hass):
         self.set_blind_position(entity_id, position)
 
     def light_level_callback(self, entity, attribute, old, new, kwargs):
-        self.log(f"Light level changed for {entity}: {old} -> {new}", level="INFO")
-        self.adjust_blind(kwargs)
+        blind_entity_id = kwargs["blind_entity_id"]
+        config = kwargs["config"]
+        debounce_period = config.get("debounce", self.global_defaults["debounce"])
+        now = self.datetime()
+
+        last_triggered = self.last_light_triggered.get(blind_entity_id)
+
+        if last_triggered and (now - last_triggered).total_seconds() < debounce_period:
+            self.log(f"Debounce active for {blind_entity_id}. Skipping adjustment.", level="INFO")
+            return
+
+        self.log(f"Light level changed for {entity} ({old} -> {new}), triggering adjustment for {blind_entity_id}", level="INFO")
+        self.last_light_triggered[blind_entity_id] = now
+        # We need to pass the blind's entity_id to adjust_blind, not the sensor's
+        self.adjust_blind({"entity_id": blind_entity_id, "config": config})
 
     def calculate_position(self, percentage, direction):
         if direction == "down":
