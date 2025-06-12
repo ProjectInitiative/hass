@@ -240,24 +240,55 @@ blind_schedule:
         - cover.blind_tilt_b643
       defaults:
         direction: up
+        # You can adjust the default 5-minute debounce here if needed
+        # debounce: 300 
       triggers:
-        - time: "07:30:00"
-          percentage: 50
+        # --- Trigger 1: When it gets dark, fully close the blinds. ---
+        # Fires when light drops below 2.
+        - light_level:
+            condition: below
+            level: 2
+          action: close
 
-        - time: "08:45:00"
-          percentage: 75
-
-        - time: "10:00:00"
+        # --- Trigger 2: When it's light enough, open the blinds fully. ---
+        # Fires when light goes above 2. This is the default "daylight" state.
+        - light_level:
+            condition: above
+            level: 2
           action: open
 
-        - time: "15:30:00"
+        # --- Trigger 3: When it gets very bright, angle blinds to reduce glare. ---
+        # Fires when light goes above 7. The 75% setting with direction "up" 
+        # creates the angled effect.
+        - light_level:
+            condition: above
+            level: 8
           percentage: 75
 
-        - time: "17:00:00"
-          percentage: 50
+        # --- Trigger 4: When it's no longer too bright, return to fully open. ---
+        # Fires when light drops back below 7, returning from the "angled" state.
+        - light_level:
+            condition: below
+            level: 7
+          action: open
 
-        - time: "18:15:00"
-          action: close
+        # - time: "07:30:00"
+        #   percentage: 50
+
+        # - time: "08:45:00"
+        #   percentage: 75
+
+        # - time: "10:00:00"
+        #   action: open
+
+        # - time: "15:30:00"
+        #   percentage: 75
+
+        # - time: "17:00:00"
+        #   percentage: 50
+
+        # - time: "18:15:00"
+        #   action: close
 
         # - light_level:
         #     condition: above
