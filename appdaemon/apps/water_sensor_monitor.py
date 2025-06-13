@@ -8,13 +8,8 @@ class WaterSensorMonitor(hass.Hass):
             self.log("No water_sensors configured in apps.yaml. App will not monitor any sensors.", level="WARNING")
             return
 
-        # Read main water valve switch from apps.yaml
         self.main_valve_switch = self.args.get("main_water_valve_switch")
-        if not self.main_valve_switch:
-            self.log("No main_water_valve_switch configured. The main valve will not be turned off.", level="WARNING")
-        elif not self.entity_exists(self.main_valve_switch):
-            self.log(f"Configured main_water_valve_switch '{self.main_valve_switch}' does not exist in Home Assistant.", level="ERROR")
-            self.main_valve_switch = None # Invalidate to prevent errors
+        self.shutoff_exclusion_sensors = self.args.get("shutoff_exclusion_sensors", [])
 
         # Read notification group from apps.yaml
         self.notification_group = self.args.get("notification_group")
@@ -46,15 +41,16 @@ class WaterSensorMonitor(hass.Hass):
 
     def water_detected_cb(self, entity, attribute, old, new, kwargs):
         sensor_name = self.friendly_name(entity)
-        message = f"WATER LEAK DETECTED at {sensor_name}!\nShutting off main water."
+        message = f"WATER LEAK DETECTED at {sensor_name}!"
         title = "💧 WATER LEAK ALERT 💧"
         
-        self.log(f"Water leak detected by {entity}! Taking action.", level="WARNING")
+        self.log(f"Water leak detected by {entity}! Sending critical notification.")
         
-        # If a main valve is defined, turn it off immediately
         if self.main_valve_switch:
-            self.log(f"Attempting to turn off main water valve: {self.main_valve_switch}")
-            self.turn_off(self.main_valve_switch)
+            if entity in self.shutoff_exclusion_sensors:
+                self.log(f"Sensor {entity} is on the exclusion list, skipping main valve shutoff.")
+            else:
+                self.turn_off(self.main_valve_switch)
         
         if not self.notifier:
             self.log("Notifier not available. Cannot send notification.", level="ERROR")
