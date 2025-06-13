@@ -344,6 +344,7 @@ water_sensor_monitor:
   notification_group: "critical_alert_phones"
   send_tts: false
   tts_max_volume: true
+  main_water_valve_switch: switch.0xa4c1385bc05a3077
   water_sensors:
     - binary_sensor.0xa4c138374c40733e_water_leak # AC Overflow Pan
     - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electical
