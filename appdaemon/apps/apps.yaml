@@ -359,6 +359,10 @@ water_sensor_monitor:
     - binary_sensor.0xa4c138d0dff30669_water_leak # Upstairs bathroom sink
     - binary_sensor.0xa4c138e84927fbb5_water_leak # Upstairs bathroom toilet
     - binary_sensor.0xa4c1384dfb580bc7_water_leak # Washer Overflow Pan
+  shutoff_exclusion_sensors:
+    - binary_sensor.0xa4c138374c40733e_water_leak # AC Overflow Pan
+    - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electical
+    
 
 
 testbutton:
