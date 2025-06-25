@@ -324,18 +324,18 @@ blind_schedule:
             condition: below
             level: 2
           action: close
-          direction: up
+          direction: down
         - light_level:
             condition: above
             level: 2
           action: open
         - light_level:
             condition: above
-            level: 6
+            level: 8
           percentage: 75
         - light_level:
             condition: below
-            level: 6
+            level: 8
           action: open
 
 water_sensor_monitor: 
