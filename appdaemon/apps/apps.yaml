@@ -30,10 +30,10 @@ global_notify:
   groups:
     family:
       android:
-        - mobile_app_pixel_6
+        - mobile_app_pixel_10_pro_xl
     critical_alert_phones:
       android:
-        - mobile_app_pixel_6
+        - mobile_app_pixel_10_pro_xl
       ios:
         - mobile_app_iphone
 
@@ -106,10 +106,10 @@ garage_notify_automation:
 garage_automation:
   module: garage_automation
   class: GarageAndLightsAutomation
-  phone: device_tracker.pixel_6
-  geocoded_location: sensor.pixel_6_geocoded_location
-  auto_car: binary_sensor.pixel_6_android_auto
-  bluetooth: sensor.pixel_6_bluetooth_connection
+  phone: device_tracker.pixel_10_pro_xl
+  geocoded_location: sensor.pixel_10_pro_xl_geocoded_location
+  auto_car: binary_sensor.pixel_10_pro_xl_android_auto
+  bluetooth: sensor.pixel_10_pro_xl_bluetooth_connection
   bt_device: "94:B2:CC:CC:76:A5 (TOYOTA Tacoma)"
   dependencies:
     - global_notify
