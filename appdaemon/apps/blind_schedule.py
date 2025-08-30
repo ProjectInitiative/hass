@@ -32,11 +32,35 @@ class BlindSchedule(hass.Hass):
         for entity_id in group_config.get("members", []):
             if entity_id not in self.blinds:
                 self.blinds[entity_id] = {}
+
             blind_config = self.blinds[entity_id]
-            blind_config["defaults"] = {**group_defaults, **blind_config.get("defaults", {})}
-            # Prepend group triggers so specific blind triggers are processed last
-            blind_config["triggers"] = group_triggers + blind_config.get("triggers", [])
-            self.log(f"Added group settings to blind: {entity_id}", level="DEBUG")
+            blind_defaults = {**group_defaults, **blind_config.get("defaults", {})}
+
+            # Blind triggers (with overrides checked)
+            blind_triggers = blind_config.get("triggers", [])
+
+            # Build a combined list
+            combined_triggers = []
+
+            for g in group_triggers:
+                # check if blind has an override for the same trigger type
+                if any(
+                    b.get("override", False) and b.get("light_level") == g.get("light_level")
+                    for b in blind_triggers
+                    if "light_level" in g
+                ):
+                    self.log(f"Skipping group trigger {g} for {entity_id} due to override", level="INFO")
+                    continue
+                combined_triggers.append(g)
+
+            # Add blind-specific triggers after (higher priority)
+            combined_triggers.extend(blind_triggers)
+
+            blind_config["defaults"] = blind_defaults
+            blind_config["triggers"] = combined_triggers
+
+            self.log(f"Final trigger set for {entity_id}: {combined_triggers}", level="DEBUG")
+
 
     def setup_blind(self, entity_id, config):
         self.log(f"Setting up blind: {entity_id}", level="INFO")
