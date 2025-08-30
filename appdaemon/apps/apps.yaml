@@ -296,6 +296,25 @@ blind_schedule:
         #   action: close
 
   blinds:
+
+    # dining room
+    
+    cover.blind_tilt_9f22:
+      defaults:
+        direction: up
+      triggers:
+        - light_level:
+            condition: above
+            level: 2
+          action: close
+          override: true
+
+        - light_level:
+            condition: above
+            level: 6
+          percentage: 75
+
+        
     # back door
     cover.blind_tilt_b643:
       defaults:
