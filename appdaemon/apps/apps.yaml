@@ -106,11 +106,24 @@ garage_notify_automation:
 garage_automation:
   module: garage_automation
   class: GarageAndLightsAutomation
-  phone: device_tracker.pixel_10_pro_xl
-  geocoded_location: sensor.pixel_10_pro_xl_geocoded_location
-  auto_car: binary_sensor.pixel_10_pro_xl_android_auto
-  bluetooth: sensor.pixel_10_pro_xl_bluetooth_connection
-  bt_device: "94:B2:CC:CC:76:A5 (TOYOTA Tacoma)"
+  users:
+    - name: "kyle"
+      phone: device_tracker.pixel_10_pro_xl
+      geocoded_location: sensor.pixel_10_pro_xl_geocoded_location
+      cars:
+        - auto_car: binary_sensor.pixel_10_pro_xl_android_auto
+          bluetooth: sensor.pixel_10_pro_xl_bluetooth_connection
+          bt_device: "94:B2:CC:CC:76:A5 (TOYOTA Tacoma)"
+        - auto_car: binary_sensor.pixel_10_pro_xl_android_auto
+          bluetooth: sensor.pixel_10_pro_xl_bluetooth_connection
+          bt_device: "C4:B7:57:14:0B:FF (TOYOTA Sienna)"
+    # - name: "user2"
+    #   phone: device_tracker.user2_phone
+    #   geocoded_location: sensor.user2_phone_geocoded_location
+    #   cars:
+    #     - auto_car: binary_sensor.user2_car_android_auto
+    #       bluetooth: sensor.user2_car_bluetooth_connection
+    #       bt_device: "XX:XX:XX:XX:XX:XX (USER2 Car)"
   dependencies:
     - global_notify
     - garage_utils

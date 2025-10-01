@@ -2,53 +2,48 @@ import appdaemon.plugins.hass.hassapi as hass
 
 class GarageAndLightsAutomation(hass.Hass):
     def initialize(self):
-        self.phone = self.args["phone"]
-        self.auto_car = self.args["auto_car"]
-        self.bluetooth = self.args["bluetooth"]
-        self.bt_device = self.args["bt_device"]
-        self.geocoded_location = self.args["geocoded_location"]
-
+        self.users = self.args["users"]
         self.garage_utils = self.get_app("garage_utils")
 
-        self.listen_state(self.check_leaving, self.phone)
-        # self.listen_state(self.check_leaving, self.auto_car)
-        # self.listen_state(self.check_leaving, self.bluetooth)
-        self.listen_state(self.check_arriving, self.phone)
-        # self.listen_state(self.check_arriving, self.auto_car)
-        # self.listen_state(self.check_arriving, self.bluetooth)
+        for user in self.users:
+            self.listen_state(self.check_state, user["phone"])
+            for car in user["cars"]:
+                self.listen_state(self.check_state, car["auto_car"])
+                self.listen_state(self.check_state, car["bluetooth"])
 
         self.log("GarageAndLightsAutomation initialized")
-        # self.log(self.get_state(self.geocoded_location, attributes="attributes"))
 
-    def in_car(self):
-        auto_car_connected = self.get_state(self.auto_car) == "on"
-        bt_connected = any(self.bt_device in device for device in self.get_state(self.bluetooth, attribute="connected_paired_devices"))        
-        self.log(f"in_car: auto_car_connected: {auto_car_connected}, bt_connected: {bt_connected}")
-        return bt_connected or auto_car_connected
+    def check_state(self, entity, attribute, old, new, kwargs):
+        for user in self.users:
+            if self.is_away(user):
+                self.log(f"Detected leaving event for {user['name']}")
+                self.garage_utils.close_garage_and_lights()
+            elif self.is_arriving(user):
+                self.log(f"Detected arriving event for {user['name']}")
+                self.garage_utils.open_garage_and_lights()
 
-    def is_phone_away(self):
-        phone_away = self.get_state(self.phone) == "not_home"
-        self.log(f"is_phone_away: {phone_away}")
+    def in_car(self, user):
+        for car in user["cars"]:
+            auto_car_connected = self.get_state(car["auto_car"]) == "on"
+            bt_connected = any(car["bt_device"] in device for device in self.get_state(car["bluetooth"], attribute="connected_paired_devices"))
+            self.log(f"in_car ({user['name']}): auto_car_connected: {auto_car_connected}, bt_connected: {bt_connected}")
+            if auto_car_connected or bt_connected:
+                return True
+        return False
+
+    def is_phone_away(self, user):
+        phone_away = self.get_state(user["phone"]) == "not_home"
+        self.log(f"is_phone_away ({user['name']}): {phone_away}")
         return phone_away
-        
-    def is_away(self):
-        is_away = self.is_phone_away() and self.in_car() 
-        self.log(f"is_away: {is_away}")
+
+    def is_away(self, user):
+        is_away = self.is_phone_away(user) and self.in_car(user)
+        self.log(f"is_away ({user['name']}): {is_away}")
         return is_away
 
-    def is_arriving(self):
-        is_arriving = not self.is_phone_away() and self.in_car()
-        self.log(f"is_arriving: {is_arriving}")
+    def is_arriving(self, user):
+        is_arriving = not self.is_phone_away(user) and self.in_car(user)
+        self.log(f"is_arriving ({user['name']}): {is_arriving}")
         return is_arriving
-
-    def check_leaving(self, entity, attribute, old, new, kwargs):
-        if self.is_away():
-            self.log(f"Detected leaving event from {entity}")
-            self.garage_utils.close_garage_and_lights()
-
-    def check_arriving(self, entity, attribute, old, new, kwargs):
-        if self.is_arriving():
-            self.log(f"Detected arriving event from {entity}")
-            self.garage_utils.open_garage_and_lights()
 
 
