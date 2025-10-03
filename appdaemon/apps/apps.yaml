@@ -75,6 +75,7 @@ simple_state_linker:
     - area: "Kitchen"
       domain: ["light"]
     - area: "Office"
+    - area: "Gym"
     - area: "Game room"
       domains: ["light"]
       exclude:
