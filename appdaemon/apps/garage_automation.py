@@ -5,56 +5,40 @@ class GarageAndLightsAutomation(hass.Hass):
         self.users = self.args["users"]
         self.garage_utils = self.get_app("garage_utils")
 
-        # Only listen for phone state changes
+        # Only listen for phone location changes per user
         for user in self.users:
-            self.listen_state(self.check_leaving, user["phone"])
-            self.listen_state(self.check_arriving, user["phone"])
+            self.listen_state(self.on_phone_change, user["phone"], user=user)
 
-        self.log("GarageAndLightsAutomation initialized (multi-user mode)")
+        self.log("GarageAndLightsAutomation initialized (multi-user refined)")
 
-    # --- Event handlers ---
-    def check_leaving(self, entity, attribute, old, new, kwargs):
-        for user in self.users:
-            if entity != user["phone"]:
-                continue
+    def on_phone_change(self, entity, attribute, old, new, kwargs):
+        user = kwargs["user"]
+        self.log(f"Phone change for {user['name']}: {old} → {new}")
 
-            if self.is_away(user):
-                self.log(f"Detected leaving event for {user['name']} ({entity})")
-                self.garage_utils.close_garage_and_lights()
+        # Use the new phone state directly
+        phone_away = new == "not_home"
+        in_car = self.is_in_car(user)
 
-    def check_arriving(self, entity, attribute, old, new, kwargs):
-        for user in self.users:
-            if entity != user["phone"]:
-                continue
+        # Derive away/arriving logic directly from actual facts
+        if phone_away and in_car:
+            self.log(f"{user['name']} is leaving (phone away + in car)")
+            self.garage_utils.close_garage_and_lights()
+        elif not phone_away and in_car:
+            self.log(f"{user['name']} is arriving (phone home + in car)")
+            self.garage_utils.open_garage_and_lights()
+        else:
+            self.log(f"{user['name']} phone changed, but no arrival/departure action needed")
 
-            if self.is_arriving(user):
-                self.log(f"Detected arriving event for {user['name']} ({entity})")
-                self.garage_utils.open_garage_and_lights()
-
-    # --- Helper methods ---
-    def in_car(self, user):
+    def is_in_car(self, user):
+        """Check if any car linked to this user shows connection."""
         for car in user["cars"]:
             auto_car_connected = self.get_state(car["auto_car"]) == "on"
-            bt_connected = any(
-                car["bt_device"] in device
-                for device in self.get_state(car["bluetooth"], attribute="connected_paired_devices")
-            )
+            bt_connected_devices = self.get_state(car["bluetooth"], attribute="connected_paired_devices") or []
+            bt_connected = any(car["bt_device"] in device for device in bt_connected_devices)
+
             self.log(f"in_car ({user['name']}): auto_car_connected={auto_car_connected}, bt_connected={bt_connected}")
+
             if auto_car_connected or bt_connected:
                 return True
+
         return False
-
-    def is_phone_away(self, user):
-        phone_away = self.get_state(user["phone"]) == "not_home"
-        self.log(f"is_phone_away ({user['name']}): {phone_away}")
-        return phone_away
-
-    def is_away(self, user):
-        is_away = self.is_phone_away(user) and self.in_car(user)
-        self.log(f"is_away ({user['name']}): {is_away}")
-        return is_away
-
-    def is_arriving(self, user):
-        is_arriving = not self.is_phone_away(user) and self.in_car(user)
-        self.log(f"is_arriving ({user['name']}): {is_arriving}")
-        return is_arriving
