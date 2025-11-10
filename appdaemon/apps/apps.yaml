@@ -397,6 +397,19 @@ water_sensor_monitor:
     - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electical
     
 
+advanced_timer:
+  module: timer
+  class: AdvancedTimer
+  # List of timer configurations
+  timers:
+    - id: switch.christmas_tree
+      name: "christmas tree timer"
+      timezone: "America/Chicago"
+      entities:
+        - light.
+      window:
+        start: "07:00:00"
+        end: "22:30:00"
 
 testbutton:
   module: testbutton_notification
