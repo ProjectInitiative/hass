@@ -402,11 +402,11 @@ advanced_timer:
   class: AdvancedTimer
   # List of timer configurations
   timers:
-    - id: switch.christmas_tree
+    - id: christmas_tree
       name: "christmas tree timer"
       timezone: "America/Chicago"
       entities:
-        - light.
+        - switch.christmas_tree
       window:
         start: "07:00:00"
         end: "22:30:00"
