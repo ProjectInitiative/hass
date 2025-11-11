@@ -408,7 +408,7 @@ advanced_timer:
       entities:
         - switch.christmas_tree
       window:
-        start: "07:00:00"
+        start: "08:00:00"
         end: "21:00:00"
 
 testbutton:
