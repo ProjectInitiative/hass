@@ -138,7 +138,7 @@ class AdvancedTimer(hass.Hass):
         original_callback(kwargs)
         
         # Reschedule for the next day, passing the original kwargs back
-        self._schedule_daily_at(handle_id, original_callback, time_to_run, config=config, **kwargs)
+        self._schedule_daily_at(handle_id, original_callback, time_to_run, **kwargs)
 
     def _schedule_daily_at(self, handle_id, callback, time_to_run, **kwargs):
         """Schedules a callback to run daily at a specific time in a specific timezone."""
