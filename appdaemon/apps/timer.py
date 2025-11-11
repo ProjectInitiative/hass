@@ -1,6 +1,6 @@
 
 import appdaemon.plugins.hass.hassapi as hass
-from datetime import datetime, time
+from datetime import datetime, time, timezone, timedelta
 from zoneinfo import ZoneInfo
 import uuid
 
@@ -24,9 +24,20 @@ class AdvancedTimer(hass.Hass):
             self.error(f"Timer '{config.get('name', timer_id)}' is missing 'entities'. Skipping.")
             return
 
+        use_dst = config.get("daylight_savings", True)
+        tz_str = config.get("timezone", "UTC")
         try:
-            tz_str = config.get("timezone", "UTC")
-            self.tz = ZoneInfo(tz_str)
+            tz_info = ZoneInfo(tz_str)
+            if not use_dst:
+                now_in_tz = datetime.now(tz_info)
+                dst_offset = now_in_tz.dst()
+                if dst_offset is None:
+                    dst_offset = timedelta(0)
+                
+                std_offset = now_in_tz.utcoffset() - dst_offset
+                tz_info = timezone(std_offset)
+            
+            config["tz"] = tz_info
         except Exception as e:
             self.error(f"Invalid timezone '{tz_str}' for timer '{config.get('name', timer_id)}'. Skipping. Error: {e}")
             return
@@ -49,15 +60,27 @@ class AdvancedTimer(hass.Hass):
         if on_time_str:
             on_time = self._parse_time(on_time_str)
             if on_time:
-                handle = self.run_daily(self._turn_on_entities, on_time, entities=config["entities"], timer_name=config.get("name", timer_id))
-                self.timers[f"{timer_id}_on"] = handle
+                self._schedule_daily_at(
+                    f"{timer_id}_on",
+                    self._turn_on_entities,
+                    on_time,
+                    config,
+                    entities=config["entities"],
+                    timer_name=config.get("name", timer_id)
+                )
                 self.log(f"Scheduled ON event for '{config.get('name', timer_id)}' at {on_time_str}")
 
         if off_time_str:
             off_time = self._parse_time(off_time_str)
             if off_time:
-                handle = self.run_daily(self._turn_off_entities, off_time, entities=config["entities"], timer_name=config.get("name", timer_id))
-                self.timers[f"{timer_id}_off"] = handle
+                self._schedule_daily_at(
+                    f"{timer_id}_off",
+                    self._turn_off_entities,
+                    off_time,
+                    config,
+                    entities=config["entities"],
+                    timer_name=config.get("name", timer_id)
+                )
                 self.log(f"Scheduled OFF event for '{config.get('name', timer_id)}' at {off_time_str}")
 
     def _schedule_window_timer(self, timer_id, config):
@@ -79,8 +102,8 @@ class AdvancedTimer(hass.Hass):
         self.log(f"Setting up window timer '{config.get('name', timer_id)}' from {start_time_str} to {end_time_str}")
 
         # Schedule checks at the start and end of the window
-        self.run_daily(self._evaluate_window, start_time, timer_id=timer_id, config=config)
-        self.run_daily(self._evaluate_window, end_time, timer_id=timer_id, config=config)
+        self._schedule_daily_at(f"{timer_id}_win_start", self._evaluate_window, start_time, config, timer_id=timer_id, config=config)
+        self._schedule_daily_at(f"{timer_id}_win_end", self._evaluate_window, end_time, config, timer_id=timer_id, config=config)
         
         # Periodically check the state within the window
         self.run_every(self._evaluate_window, self.datetime(), window.get("check_interval", 60), timer_id=timer_id, config=config)
@@ -104,14 +127,55 @@ class AdvancedTimer(hass.Hass):
             self.run_in(self._turn_off_entities, off_in * 60, entities=config["entities"], timer_name=config.get("name", timer_id))
             self.log(f"'{config.get('name', timer_id)}' will turn OFF in {off_in} minutes.")
 
+    def _rescheduling_callback(self, kwargs):
+        """A wrapper for callbacks that need to be rescheduled daily."""
+        reschedule_params = kwargs.pop("__reschedule_params")
+        handle_id = reschedule_params["handle_id"]
+        original_callback = reschedule_params["original_callback"]
+        time_to_run = reschedule_params["time_to_run"]
+        config = reschedule_params["config"]
+        
+        original_callback(kwargs)
+        
+        # Reschedule for the next day, passing the original kwargs back
+        self._schedule_daily_at(handle_id, original_callback, time_to_run, config, **kwargs)
+
+    def _schedule_daily_at(self, handle_id, callback, time_to_run, config, **kwargs):
+        """Schedules a callback to run daily at a specific time in a specific timezone."""
+        tz = config["tz"]
+        now = self.get_now().astimezone(tz)
+        
+        runtime = now.replace(hour=time_to_run.hour, minute=time_to_run.minute, second=time_to_run.second, microsecond=0)
+        
+        if runtime < now:
+            runtime += timedelta(days=1)
+
+        reschedule_params = {
+            "handle_id": handle_id,
+            "original_callback": callback,
+            "time_to_run": time_to_run,
+            "config": config,
+        }
+        
+        # Use a copy of kwargs to avoid modifying the original dict
+        run_at_kwargs = kwargs.copy()
+        run_at_kwargs["__reschedule_params"] = reschedule_params
+        
+        handle = self.run_at(self._rescheduling_callback, runtime, **run_at_kwargs)
+        
+        if handle_id in self.timers:
+            self.cancel_timer(self.timers[handle_id])
+        self.timers[handle_id] = handle
+
     def _evaluate_window(self, kwargs):
         """Check if entities should be on or off based on the current time within a window."""
         config = kwargs["config"]
         timer_name = config.get("name", kwargs['timer_id'])
+        tz = config["tz"]
         
         start_time = self._parse_time(config["window"]["start"])
         end_time = self._parse_time(config["window"]["end"])
-        now_time = self.get_now().astimezone(self.tz).time()
+        now_time = self.get_now().astimezone(tz).time()
 
         # Handle overnight windows
         if start_time <= end_time: # Same day window

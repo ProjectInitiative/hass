@@ -1,3 +1,89 @@
 hello_world:
   module: hello
   class: HelloWorld
+# -----------------------------------------------------------------------------
+# Example configuration for the AdvancedTimer app
+# 
+# To use this, copy the desired timer configurations into your 'apps.yaml' 
+# file and customize them to your needs.
+# -----------------------------------------------------------------------------
+
+# advanced_timer:
+#   module: timer
+#   class: AdvancedTimer
+#   # List of timer configurations
+#   timers:
+#     # --- Example 1: Simple On/Off Schedule ---
+#     # Turns on a light in the morning and off at night.
+#     - id: morning_light_schedule
+#       name: "Morning Living Room Light"
+#       timezone: "America/New_York"
+#       entities:
+#         - light.living_room_lamp
+#       schedule:
+#         on: "07:00:00"
+#         off: "09:30:00"
+
+#     # --- Example 2: Time Window Enforcement ---
+#     # Ensures a fan is running during the afternoon to circulate air.
+#     # If the fan is manually turned off during this window, the app will turn it back on.
+#     - id: afternoon_fan_window
+#       name: "Afternoon Fan Circulation"
+#       timezone: "America/Chicago"
+#       entities:
+#         - switch.office_fan
+#       window:
+#         start: "13:00:00"
+#         end: "17:00:00"
+#         # Optional: How often (in seconds) to check the state of the entities. Defaults to 60.
+#         check_interval: 120
+
+#     # --- Example 3: Overnight Window ---
+#     # Keeps a security light on overnight.
+#     - id: overnight_security_light
+#       name: "Overnight Security Light"
+#       timezone: "America/Los_Angeles"
+#       entities:
+#         - light.outdoor_security_light
+#       window:
+#         start: "22:00:00"
+#         end: "06:00:00"
+
+#     # --- Example 4: Relative 'in X minutes' Timer ---
+#     # Useful for temporary situations, like turning off a bathroom fan after a shower.
+#     # This timer would typically be triggered by another automation or script that
+#     # dynamically adds this configuration. For testing, you can add it here.
+#     - id: bathroom_fan_off_delay
+#       name: "Bathroom Fan Off Delay"
+#       entities:
+#         - fan.bathroom_fan
+#       relative:
+#         # Turns the fan off in 15 minutes from the time AppDaemon is started/reloaded.
+#         off_in: 15 
+
+#     # --- Example 5: Group of Entities ---
+#     # Control multiple lights with one timer.
+#     - id: evening_ambiance
+#       name: "Evening Ambiance Lights"
+#       timezone: "Europe/London"
+#       entities:
+_group
+#         - light.living_room_accent
+#         - light.dining_area_light
+#       schedule:
+#         on: "19:00:00"
+#         off: "23:00:00"
+
+#     # --- Example 6: Timer with Daylight Savings Disabled ---
+#     # This timer will always operate at the standard time offset for its timezone,
+#     # ignoring any daylight saving adjustments. For example, if "America/New_York"
+#     # is used, the timer will always run at EST (UTC-5), even during EDT.
+#     - id: fixed_offset_light
+#       name: "Fixed Offset Light (No DST)"
+#       timezone: "America/New_York"
+#       daylight_savings: false
+#       entities:
+#         - light.kitchen_light
+#       schedule:
+#         on: "08:00:00"
+#         off: "17:00:00"
