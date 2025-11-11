@@ -64,7 +64,7 @@ class AdvancedTimer(hass.Hass):
                     f"{timer_id}_on",
                     self._turn_on_entities,
                     on_time,
-                    config,
+                    config=config,
                     entities=config["entities"],
                     timer_name=config.get("name", timer_id)
                 )
@@ -77,7 +77,7 @@ class AdvancedTimer(hass.Hass):
                     f"{timer_id}_off",
                     self._turn_off_entities,
                     off_time,
-                    config,
+                    config=config,
                     entities=config["entities"],
                     timer_name=config.get("name", timer_id)
                 )
@@ -102,8 +102,8 @@ class AdvancedTimer(hass.Hass):
         self.log(f"Setting up window timer '{config.get('name', timer_id)}' from {start_time_str} to {end_time_str}")
 
         # Schedule checks at the start and end of the window
-        self._schedule_daily_at(f"{timer_id}_win_start", self._evaluate_window, start_time, config, timer_id=timer_id, config=config)
-        self._schedule_daily_at(f"{timer_id}_win_end", self._evaluate_window, end_time, config, timer_id=timer_id, config=config)
+        self._schedule_daily_at(f"{timer_id}_win_start", self._evaluate_window, start_time, timer_id=timer_id, config=config)
+        self._schedule_daily_at(f"{timer_id}_win_end", self._evaluate_window, end_time, timer_id=timer_id, config=config)
         
         # Periodically check the state within the window
         self.run_every(self._evaluate_window, self.datetime(), window.get("check_interval", 60), timer_id=timer_id, config=config)
@@ -138,10 +138,11 @@ class AdvancedTimer(hass.Hass):
         original_callback(kwargs)
         
         # Reschedule for the next day, passing the original kwargs back
-        self._schedule_daily_at(handle_id, original_callback, time_to_run, config, **kwargs)
+        self._schedule_daily_at(handle_id, original_callback, time_to_run, config=config, **kwargs)
 
-    def _schedule_daily_at(self, handle_id, callback, time_to_run, config, **kwargs):
+    def _schedule_daily_at(self, handle_id, callback, time_to_run, **kwargs):
         """Schedules a callback to run daily at a specific time in a specific timezone."""
+        config = kwargs["config"]
         tz = config["tz"]
         now = self.get_now().astimezone(tz)
         
