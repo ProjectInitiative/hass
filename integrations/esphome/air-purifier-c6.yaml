@@ -1,0 +1,92 @@
+esphome:
+  name: air-purifier-c6
+  friendly_name: ESP32-C6 SuperMini
+
+esp32:
+  board: esp32-c6-devkitc-1
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "ESP32-C6 Fallback Hotspot"
+    password: "superminipassword"
+
+captive_portal:
+
+# I2C Bus (SDA: GPIO6, SCL: GPIO7 - Check your board pinout!)
+i2c:
+  sda: GPIO6
+  scl: GPIO7
+  scan: true
+  id: bus_a
+
+# PWM Output for Fan (GPIO5)
+output:
+  - platform: ledc
+    pin: GPIO5
+    id: fan_pwm
+    frequency: 25000Hz # Standard PC fan PWM frequency
+
+# Fan Component
+fan:
+  - platform: speed
+    output: fan_pwm
+    name: "Cooling Fan"
+
+sensor:
+  # SPS30 Particulate Matter Sensor (I2C)
+  - platform: sps30
+    i2c_id: bus_a
+    address: 0x69 # Default I2C address
+    pm_1_0:
+      name: "PM <1.0µm Weight concentration"
+    pm_2_5:
+      name: "PM <2.5µm Weight concentration"
+    pm_4_0:
+      name: "PM <4.0µm Weight concentration"
+    pm_10_0:
+      name: "PM <10.0µm Weight concentration"
+    # Optional: Auto-cleaning interval
+    auto_cleaning_interval: 604800s # 1 week
+
+  # DHT22 (AM2302) Temperature & Humidity (GPIO4)
+  - platform: dht
+    pin: GPIO4
+    model: AM2302
+    temperature:
+      name: "Temperature"
+    humidity:
+      name: "Humidity"
+    update_interval: 60s
+
+
+# Onboard Status LED (often GPIO15)
+light:
+  - platform: status_led
+    name: "Onboard Status LED"
+    pin:
+      number: GPIO15
+
+# Onboard RGB LED (often GPIO8) - WS2812
+# Note: GPIO8 is a strapping pin, be careful.
+#  - platform: esp32_rmt_ws2812
+#    id: rgb_led
+#    name: "Onboard RGB LED"
+#    pin: GPIO8
+#    num_leds: 1
+#    rgb_order: GRB
