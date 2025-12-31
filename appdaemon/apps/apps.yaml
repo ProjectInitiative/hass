@@ -74,6 +74,8 @@ simple_state_linker:
     # This will link only the 'light' entities in the office area.
     - area: "Kitchen"
       domain: ["light"]
+      exclude:
+        - light.kitchen_sink_light
     - area: "Office"
     - area: "Gym"
     - area: "Game room"
