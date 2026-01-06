@@ -83,7 +83,7 @@ simple_state_linker:
       exclude:
         - light.0x847127fffebb7d2f # Stair lights
     - area: "Front bedroom"
-    - area: "Nursery bedroom"
+    - area: "Nursery"
     - area: "Back bedroom"
 
 garage_utils:
