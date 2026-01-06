@@ -82,6 +82,7 @@ simple_state_linker:
       domains: ["light"]
       exclude:
         - light.0x847127fffebb7d2f # Stair lights
+    - area: "Back bedroom"
 
 garage_utils:
   module: garage_utils
@@ -235,6 +236,9 @@ fan_auto_off:
     fan.nursery_fan:
       time_limit: 120  # 2 hours in minutes
       cutoff_time: "21:30:00" 
+    fan.back_bedroom_fan:
+      time_limit: 120  # 2 hours in minutes
+      cutoff_time: "23:30:00" 
     fan.master_bedroom_fan:
       enforcement_time_start: "21:00:00"
       enforcement_time_end: "06:00:00"
@@ -399,19 +403,19 @@ water_sensor_monitor:
     - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electical
     
 
-advanced_timer:
-  module: timer
-  class: AdvancedTimer
-  # List of timer configurations
-  timers:
-    - id: christmas_tree
-      name: "christmas tree timer"
-      timezone: "America/Chicago"
-      entities:
-        - switch.christmas_tree
-      window:
-        start: "08:00:00"
-        end: "21:00:00"
+# advanced_timer:
+#   module: timer
+#   class: AdvancedTimer
+#   # List of timer configurations
+#   timers:
+#     - id: christmas_tree
+#       name: "christmas tree timer"
+#       timezone: "America/Chicago"
+#       entities:
+#         - switch.christmas_tree
+#       window:
+#         start: "08:00:00"
+#         end: "21:00:00"
 
 testbutton:
   module: testbutton_notification
