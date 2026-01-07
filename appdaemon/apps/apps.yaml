@@ -79,10 +79,12 @@ simple_state_linker:
     - area: "Office"
     - area: "Gym"
     - area: "Game room"
-    - area: "Living room"
       domains: ["light"]
       exclude:
         - light.0x847127fffebb7d2f # Stair lights
+    - area: "Living room"
+      exclude:
+        - light.backyard_floodlight # camera lights
     - area: "Front bedroom"
     - area: "Nursery"
     - area: "Back bedroom"
