@@ -85,6 +85,7 @@ simple_state_linker:
     - area: "Living room"
       exclude:
         - light.backyard_floodlight # camera lights
+        - light.0x84fd27fffebcd13a # back porch lights
     - area: "Front bedroom"
     - area: "Nursery"
     - area: "Back bedroom"
