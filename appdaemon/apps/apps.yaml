@@ -242,9 +242,6 @@ fan_auto_off:
     fan.nursery_fan:
       time_limit: 120  # 2 hours in minutes
       cutoff_time: "21:30:00" 
-    fan.back_bedroom_fan:
-      time_limit: 120  # 2 hours in minutes
-      cutoff_time: "23:30:00" 
     fan.master_bedroom_fan:
       enforcement_time_start: "21:00:00"
       enforcement_time_end: "06:00:00"
