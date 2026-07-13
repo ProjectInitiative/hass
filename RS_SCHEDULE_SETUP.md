@@ -44,6 +44,19 @@ AppDaemon will publish MQTT Discovery messages that create these sensors in HA:
 | `sensor.republic_services_recycling_next_pickup` | Date of next recycling pickup |
 | `sensor.republic_services_schedule_status` | Human-readable status |
 
+## Notifications (automatic)
+
+The app sends push notifications to your `family` group via `global_notify`:
+
+| Trigger | Message |
+|---|---|
+| **Today is a pickup** | "🚛 TODAY is Trash AND Recycling pickup day! Get all bins out!" |
+| **Tomorrow is trash** | "♻️ Pickup Tomorrow — Trash pickup is Tuesday! Get your bins out tonight." |
+| **Tomorrow is recycling** | "🗑️ Pickup Tomorrow — Recycling pickup is Tuesday! Get your bins out tonight." |
+| **Both tomorrow** | "🚛 Both trash AND recycling pickup tomorrow!" |
+
+Notifications fire at **5:00 PM** the day before each pickup.
+
 ### Example automation
 
 Notify when trash is tomorrow:
@@ -70,6 +83,7 @@ action:
 3. The address is read from `input_text.rs_address` entity (preferred) or `secrets.yaml`
 4. Pickup dates are published as MQTT entities via Home Assistant's discovery mechanism
 5. You can change the address from the HA UI and the app auto-refreshes
+6. Notifications are sent via `global_notify` (already configured in your apps.yaml)
 
 ## Troubleshooting
 
