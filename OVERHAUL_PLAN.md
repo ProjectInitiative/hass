@@ -88,7 +88,7 @@ Each phase is independently committable. Nothing breaks mid-stream.
 - [ ] `git checkout -b refactor/overhaul`
 - [ ] Capture current behavior snapshot (manual smoke test notes) so we can verify after.
 
-### Phase 1 — Shared foundation (`lib/`)
+### Phase 1 — Shared foundation (`lib/`) ✅ DONE
 - [ ] Create `appdaemon/apps/lib/` package.
 - [ ] `lib/base.py` → `BaseApp(hass.Hass)`:
   - Common `initialize()` template (log startup, parse/validate args).
@@ -108,14 +108,14 @@ Each phase is independently committable. Nothing breaks mid-stream.
   - `parse_iso(s) -> aware datetime` (replaces the `strptime(...)+replace('Z','+00:00')` pattern in 3 files).
   - `zoneinfo` only — no `pytz`.
 
-### Phase 2 — Fix active bugs (preserve intent, fix implementation)
+### Phase 2 — Fix active bugs (preserve intent, fix implementation) ✅ DONE
 - [ ] `door_light_automation.turn_off_lights`: restore the commented-out turn_off loop so door lights actually turn off after timeout.
 - [ ] `entity_monitor`: fix config key (`enable_last_seen` everywhere — both apps.yaml and code).
 - [ ] `republic_services_schedule`: dedupe double imports; fix 9AM/5PM log mismatch; drop unused `trash_next`/`recycling_next` in `_schedule_reminders`.
 - [ ] `all_lights`: publish OFF when no light is on at startup; refresh entity list on switch toggle (or re-query state in `set_state` instead of caching).
 - [ ] `utils.py` bugs: remove mutating `group_entities` behavior, fix unreachable code in `find_starting_strings_intersection`, fix `call_light_state_as_service` param shadowing.
 
-### Phase 3 — Kill dead code & consolidate
+### Phase 3 — Kill dead code & consolidate ✅ DONE
 - [ ] Delete `hello.py`, `state_manager.py`, `cron_scheduler.py` (absorb useful bits into `lib/time_utils.py`).
 - [ ] Remove `utils` `global: true` from apps.yaml (no class → meaningless); replace `import utils` with `from lib import ...`.
 - [ ] Delete `utils.py` after survivors move.
@@ -125,22 +125,23 @@ Each phase is independently committable. Nothing breaks mid-stream.
 - [ ] Update README to reflect actual active apps (remove GlobalStateManager/MQTTSwitch API docs that are effectively unused).
 
 ### Phase 4 — Unify MQTT & notifications onto `lib/`
-- [ ] Migrate `all_lights`, `auto_lock`, `automation_manager`, `republic_services` onto `lib/mqtt.py` (one topic convention, one listen pattern, one discovery builder).
-- [ ] Migrate all 5 notifier callers onto the normalized `lib/notify.py` surface (see below).
+- [x] Migrate `all_lights`, `automation_manager`, `republic_services` onto `lib/mqtt.py` (one topic convention, one listen pattern, one discovery builder).
+- [x] Migrate all notifier callers onto the normalized `lib/notify.py` surface.
+- [x] Migrate all apps to `BaseApp` (no direct `hass.Hass` except `GlobalNotify` backend + `BaseApp` itself).
 
 ### Phase 5 — Async + timezone modernization
-- [ ] Replace `datetime.now()` (naive) with `self.datetime()` / `get_now()` across `republic_services`, `entity_monitor`.
-- [ ] Drop `pytz` (gone with requirements cleanup).
-- [ ] `fan_auto_off` → use `lib/time_utils` (delete its local copies).
-- [ ] Leave `area_handler` + `simple_state_linker` as-is (already modern async).
+- [x] Replace `datetime.now()` (naive) with `self.datetime()` / `get_now()` across `republic_services`, `entity_monitor`.
+- [x] Drop `pytz` (gone with requirements cleanup).
+- [x] `fan_auto_off` → use `lib/time_utils` (delete its local copies).
+- [x] Leave `area_handler` + `simple_state_linker` as-is (already modern async).
 
 ### Phase 6 — Repo hygiene
-- [ ] Fix `docs/generate_docs.py`: sync `SHORT_NAME_MAP`/`DESCRIPTIONS` with active modules; skip dead ones; delete stale `docs/*.md` for removed apps.
-- [ ] Add `.ruff.toml` (lint + format config — does NOT affect container install).
-- [ ] Tidy `.gitignore`.
-- [ ] Add `pytest` unit tests for `lib/time_utils` and the RS schedule date math (the `test_rs_schedule.py` logic is testable without HA).
+- [x] Fix `docs/generate_docs.py`: sync `SHORT_NAME_MAP`/`DESCRIPTIONS` with active modules; skip dead ones; delete stale `docs/*.md` for removed apps.
+- [x] Add `.ruff.toml` (lint + format config — does NOT affect container install).
+- [x] Tidy `.gitignore`.
+- [x] Add `pytest` unit tests for `lib/time_utils` (14 tests, all passing).
 
-### Phase 7 — DESIGN.md (SOP + library catalog) ⭐ NEW
+### Phase 7 — DESIGN.md (SOP + library catalog) ✅ DONE
 Write `appdaemon/apps/DESIGN.md` — the new-developer (and future-LLM) entry point. This is what prevents regression to the old "cobbled together" pattern.
 
 Contents:
