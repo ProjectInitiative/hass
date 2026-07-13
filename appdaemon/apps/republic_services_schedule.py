@@ -18,6 +18,8 @@ MQTT Discovery entities created:
 
 import appdaemon.plugins.hass.hassapi as hass
 import requests
+import appdaemon.plugins.hass.hassapi as hass
+import requests
 from datetime import datetime, time, timedelta
 import json
 
@@ -37,6 +39,9 @@ class RepublicServicesSchedule(hass.Hass):
             return
 
         self.log(f"Using address: {self.address}")
+
+        # Get MQTT plugin API for direct broker access (like all_lights)
+        self.mqtt = self.get_plugin_api("MQTT")
 
         # Get notification app for sending push notifications
         self.notify_app = self.get_app("global_notify")
@@ -182,6 +187,9 @@ class RepublicServicesSchedule(hass.Hass):
         self._publish_mqtt_discovery("trash", trash_next, residential)
         self._publish_mqtt_discovery("recycling", recycling_next, residential)
 
+        # Step 4: Publish status sensor config
+        self._publish_status_config()
+
         # Step 5: Schedule pickup reminder notifications for tomorrow pickups
         self._schedule_reminders(trash_next, recycling_next, residential)
 
@@ -231,8 +239,9 @@ class RepublicServicesSchedule(hass.Hass):
                 freq_str = f"1x every {period} {unit}"
 
         entity_id = f"republic_services_{service_type}_next_pickup"
-        discovery_topic = f"sensor/{entity_id}/config"
-        state_topic = f"sensor/{entity_id}/state"
+        discovery_topic = f"homeassistant/sensor/{entity_id}/config"
+        state_topic = f"homeassistant/sensor/{entity_id}/state"
+        attr_topic = f"homeassistant/sensor/{entity_id}/attributes"
 
         # MQTT Discovery payload
         discovery = {
@@ -246,10 +255,7 @@ class RepublicServicesSchedule(hass.Hass):
             },
             "state_topic": state_topic,
             "value_template": "{{ value }}",
-            "json_attributes_topic": f"sensor/{entity_id}/attributes",
-            "availability_topic": f"sensor/{entity_id}/available",
-            "payload_available": True,
-            "payload_not_available": False,
+            "json_attributes_topic": attr_topic,
             "entity_category": "diagnostic",
             "origin": {
                 "name": "AppDaemon Republic Services",
@@ -257,32 +263,31 @@ class RepublicServicesSchedule(hass.Hass):
             },
         }
 
-        # Add extra attributes
-        if routes:
-            discovery["json_attributes_template"] = '{\"routes\": ' \
-                f'"{", ".join(routes)}", \"frequency\": "{freq_str}", ' \
-                f'\"all_upcoming\": \'{json.dumps(self._get_all_upcoming(service_type, residential_data))}\' ' \
-                "}"
-
-        # Publish discovery config
+        # Publish discovery config via direct MQTT client (like all_lights)
         try:
-            self.call_service("mqtt/publish",
-                              topic=discovery_topic,
-                              payload=json.dumps(discovery),
-                              qos=0,
-                              retain=True)
+            self.mqtt.mqtt_publish(discovery_topic, json.dumps(discovery), qos=0, retain=True)
+            self.log(f"Published discovery config: {discovery_topic}")
         except Exception as e:
             self.log(f"MQTT Discovery publish failed for {entity_id}: {e}", level="WARNING")
 
         # Publish state
         try:
-            self.call_service("mqtt/publish",
-                              topic=state_topic,
-                              payload=next_date or "unknown",
-                              qos=0,
-                              retain=True)
+            self.mqtt.mqtt_publish(state_topic, next_date or "unknown", qos=0, retain=True)
         except Exception as e:
             self.log(f"MQTT state publish failed for {entity_id}: {e}", level="WARNING")
+
+        # Publish attributes
+        if routes:
+            all_upcoming = self._get_all_upcoming(service_type, residential_data)
+            attrs = {
+                "routes": routes,
+                "frequency": freq_str,
+                "all_upcoming": all_upcoming,
+            }
+            try:
+                self.mqtt.mqtt_publish(attr_topic, json.dumps(attrs), qos=0, retain=True)
+            except Exception as e:
+                self.log(f"MQTT attributes publish failed for {entity_id}: {e}", level="WARNING")
 
     def _get_all_upcoming(self, service_type, residential_data):
         """Get all upcoming pickup dates for a service type."""
@@ -295,16 +300,42 @@ class RepublicServicesSchedule(hass.Hass):
 
         return []
 
+    def _publish_status_config(self):
+        """Publish MQTT Discovery config for the schedule status sensor."""
+        status_entity_id = "republic_services_schedule_status"
+        discovery_topic = f"homeassistant/sensor/{status_entity_id}/config"
+        state_topic = f"homeassistant/sensor/{status_entity_id}/state"
+
+        discovery = {{
+            "name": "Republic Services Schedule Status",
+            "unique_id": "rs_schedule_status",
+            "device": {{
+                "name": "Republic Services",
+                "identifiers": ["republic_services"],
+                "manufacturer": "Republic Services",
+                "model": "Waste Pickup Schedule",
+            }},
+            "state_topic": state_topic,
+            "entity_category": "diagnostic",
+            "icon": "mdi:calendar-check",
+            "origin": {{
+                "name": "AppDaemon Republic Services",
+                "sw_version": "1.0",
+            }},
+        }}
+
+        try:
+            self.mqtt.mqtt_publish(discovery_topic, json.dumps(discovery), qos=0, retain=True)
+        except Exception as e:
+            self.log(f"Status discovery publish failed: {{e}}", level="WARNING")
+
     def _set_status(self, message):
         """Update the schedule status sensor."""
+        state_topic = "homeassistant/sensor/republic_services_schedule_status/state"
         try:
-            self.call_service("mqtt/publish",
-                              topic="sensor/republic_services_schedule_status/state",
-                              payload=message,
-                              qos=0,
-                              retain=True)
+            self.mqtt.mqtt_publish(state_topic, message, qos=0, retain=True)
         except Exception as e:
-            self.log(f"Status publish failed: {e}", level="WARNING")
+            self.log(f"Status publish failed: {{e}}", level="WARNING")
 
     def _send_pickup_notification(self, kwargs):
         """
