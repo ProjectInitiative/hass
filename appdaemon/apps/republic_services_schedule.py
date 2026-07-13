@@ -79,10 +79,10 @@ class RepublicServicesSchedule(hass.Hass):
 
     def _schedule_pickup_reminder(self, pickup_date_str, service_type):
         """
-        Schedule a notification callback for tomorrow at 5 PM.
-        If it's already past 5 PM, schedule for tomorrow at 5 PM.
+        Schedule a notification callback for 9 AM the day before pickup.
+        If it's already past 9 AM, schedule for the next eligible reminder.
         """
-        target_time = self.parse_time("17:00:00")
+        target_time = self.parse_time("09:00:00")
         pickup_dt = datetime.strptime(pickup_date_str, "%Y-%m-%d").date()
         reminder_date = pickup_dt - timedelta(days=1)
         

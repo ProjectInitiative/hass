@@ -55,7 +55,7 @@ The app sends push notifications to your `family` group via `global_notify`:
 | **Tomorrow is recycling** | "🗑️ Pickup Tomorrow — Recycling pickup is Tuesday! Get your bins out tonight." |
 | **Both tomorrow** | "🚛 Both trash AND recycling pickup tomorrow!" |
 
-Notifications fire at **5:00 PM** the day before each pickup.
+Notifications fire at **9:00 AM** the day before each pickup.
 
 ### Example automation
 
