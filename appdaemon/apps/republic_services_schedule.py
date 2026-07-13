@@ -306,28 +306,28 @@ class RepublicServicesSchedule(hass.Hass):
         discovery_topic = f"homeassistant/sensor/{status_entity_id}/config"
         state_topic = f"homeassistant/sensor/{status_entity_id}/state"
 
-        discovery = {{
+        discovery = {
             "name": "Republic Services Schedule Status",
             "unique_id": "rs_schedule_status",
-            "device": {{
+            "device": {
                 "name": "Republic Services",
                 "identifiers": ["republic_services"],
                 "manufacturer": "Republic Services",
                 "model": "Waste Pickup Schedule",
-            }},
+            },
             "state_topic": state_topic,
             "entity_category": "diagnostic",
             "icon": "mdi:calendar-check",
-            "origin": {{
+            "origin": {
                 "name": "AppDaemon Republic Services",
                 "sw_version": "1.0",
-            }},
-        }}
+            },
+        }
 
         try:
             self.mqtt.mqtt_publish(discovery_topic, json.dumps(discovery), qos=0, retain=True)
         except Exception as e:
-            self.log(f"Status discovery publish failed: {{e}}", level="WARNING")
+            self.log(f"Status discovery publish failed: {e}", level="WARNING")
 
     def _set_status(self, message):
         """Update the schedule status sensor."""
@@ -335,7 +335,7 @@ class RepublicServicesSchedule(hass.Hass):
         try:
             self.mqtt.mqtt_publish(state_topic, message, qos=0, retain=True)
         except Exception as e:
-            self.log(f"Status publish failed: {{e}}", level="WARNING")
+            self.log(f"Status publish failed: {e}", level="WARNING")
 
     def _send_pickup_notification(self, kwargs):
         """
