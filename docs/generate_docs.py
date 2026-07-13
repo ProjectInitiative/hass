@@ -15,7 +15,7 @@ Writes:
   - docs/index.md  (quick reference table)
   - docs/<app_name>.md  (per-app doc)
 
-Skips: test_*.py, hello.py
+Skips: test_*.py, hello.py, lib/
 """
 
 import os
@@ -26,47 +26,50 @@ import sys
 APP_DIR = os.path.join(os.path.dirname(__file__), "..", "appdaemon", "apps")
 DOCS_DIR = os.path.join(os.path.dirname(__file__))
 APPS_YAML_PATH = os.path.join(APP_DIR, "apps.yaml")
+LIB_DIR = os.path.join(APP_DIR, "lib")
 
 CATEGORY_MAP = {
+    "all_lights": "Utility",
     "area_handler": "Infrastructure",
     "auto_lock": "Security",
     "automation_manager": "Infrastructure",
     "blind_schedule": "Comfort",
+    "door_light_automation": "Automation",
+    "doorbell_notification": "Notification",
+    "entity_monitor": "Monitoring",
     "fan_auto_off": "Comfort",
     "garage_automation": "Automation",
     "garage_notify_automation": "Notification",
     "garage_utils": "Utility",
     "global_notify": "Infrastructure",
     "meeting_indicator": "Notification",
-    "door_light_automation": "Automation",
-    "entity_monitor": "Monitoring",
-    "simple_state_linker": "Infrastructure",
-    "timer": "Automation",
     "republic_services_schedule": "Utility",
+    "simple_state_linker": "Infrastructure",
+    "testbutton_notification": "Notification",
+    "timer": "Automation",
     "water_sensor_monitor": "Monitoring",
-    "doorbell_notification": "Notification",
-    "utils": "Utility",
 }
 
 SHORT_NAME_MAP = {
+    "all_lights": "all_lights",
     "area_handler": "area_handler",
     "auto_lock": "auto_lock",
     "automation_manager": "automation_manager",
     "blind_schedule": "blind_schedule",
+    "door_light_automation": "door_light",
+    "doorbell_notification": "doorbell",
+    "entity_monitor": "entity_monitor",
     "fan_auto_off": "fan_auto_off",
     "garage_automation": "garage_automation",
     "garage_notify_automation": "garage_notify",
     "garage_utils": "garage_utils",
     "global_notify": "global_notify",
     "meeting_indicator": "meeting_indicator",
-    "door_light_automation": "door_light",
-    "entity_monitor": "entity_monitor",
-    "simple_state_linker": "state_linker",
-    "timer": "advanced_timer",
     "republic_services_schedule": "republic_services",
+    "simple_state_linker": "state_linker",
+    "testbutton_notification": "testbutton_notification",
+    "timer": "advanced_timer",
     "water_sensor_monitor": "water_sensor",
-    "doorbell_notification": "doorbell",
-    "utils": "utils",
 }
 
 # Human-readable descriptions (override module docstrings)
@@ -88,10 +91,7 @@ DESCRIPTIONS = {
     "republic_services_schedule": "Fetches Republic Services waste pickup schedule from the public API (no login required). Creates Home Assistant MQTT Discovery entities for trash and recycling next pickup dates. Sends push notifications at 9 AM the day before pickup.",
     "water_sensor_monitor": "Monitors water leak sensors and automatically shuts off the main water valve when a leak is detected. Sends critical alerts via notification group. Configurable exclusion list for sensors that shouldn't trigger shutoff.",
     "doorbell_notification": "Sends a notification when the front door visitor button is pressed. Listens to a binary sensor entity and triggers a notify call.",
-    "utils": "Shared utility functions loaded globally. Provides entity creation, group operations, substring matching, and light service call helpers.",
-    "all_lights": "Controls all lights in the house — toggle them all on/off via a virtual switch. Can also group lights by areas.",
-    "cron_scheduler": "Flexible cron-style scheduler for AppDaemon. Supports time-based jobs, enforcement windows, daily routines, and state-change triggers.",
-    "state_manager": "Manages entity state persistence and restoration. Saves states on changes and restores them on startup.",
+    "all_lights": "Controls all lights in the house — toggle them all on/off via a virtual MQTT switch. Excludes bedroom lights.",
     "testbutton_notification": "Sends a notification when the test button (Zigbee action sensor) is pressed. Used for testing notification flows.",
 }
 
@@ -190,7 +190,7 @@ Generated automatically by `docs/generate_docs.py`.
         index += f"| {short_name.replace('_', ' ').title()} | `{info['module']}` | {purpose} | {info['lines']} |\n"
 
     index += "\n## Dependencies\n\n"
-    index += "- `utils` — shared utilities (loaded as `global: true`)\n"
+    index += "- `lib/` — shared library package (base, notify, mqtt, time_utils, lights)\n"
     index += "- `area_handler` — priority 10, loaded first\n"
     index += "- `global_notify` — notification router used by many apps\n"
     index += "- `garage_utils` — shared garage logic\n"
@@ -246,6 +246,17 @@ def main():
     index = generate_index(app_data)
     with open(os.path.join(DOCS_DIR, "index.md"), "w") as f:
         f.write(index)
+
+    # Remove stale docs for modules that no longer exist
+    valid_short_names = set(app_data.keys())
+    for f in os.listdir(DOCS_DIR):
+        if not f.endswith(".md") or f == "index.md":
+            continue
+        short_name = f[:-3]
+        if short_name not in valid_short_names:
+            stale_path = os.path.join(DOCS_DIR, f)
+            os.remove(stale_path)
+            print(f"  Removed stale doc: {f}")
 
     print(f"Generated docs for {len(app_data)} apps:")
     for name, info in sorted(app_data.items()):

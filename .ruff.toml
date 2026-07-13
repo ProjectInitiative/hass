@@ -1,0 +1,34 @@
+# Ruff configuration — lint + format (does not affect container install).
+# The container installs from requirements.txt; this is for local dev only.
+#
+# Usage:
+#   ruff check appdaemon/   # lint
+#   ruff format appdaemon/  # format
+
+target-version = "py311"
+line-length = 100
+
+[lint]
+# Enable common rule sets:
+#   E/W  — pycodestyle (style + whitespace)
+#   F    — pyflakes (unused imports, undefined names, etc.)
+#   I    — isort (import sorting)
+#   UP   — pyupgrade (modernize syntax)
+select = ["E", "W", "F", "I", "UP"]
+
+# Rules to ignore (AppDaemon patterns that trigger false positives):
+ignore = [
+    "E402",  # module-level import not at top (AppDaemon apps import lib/ after stdlib)
+    "E501",  # line too long (handled by formatter)
+    "F401",  # unused import (some apps import for side effects, e.g. mqttapi)
+]
+
+[lint.per-file-ignores]
+# Test scripts can use broad excepts and print
+"test_*.py" = ["E501"]
+"docs/generate_docs.py" = ["E501"]
+
+[format]
+# Use double quotes for strings, consistent with existing code
+quote-style = "double"
+indent-style = "space"

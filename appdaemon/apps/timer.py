@@ -1,10 +1,11 @@
 
-import appdaemon.plugins.hass.hassapi as hass
 from datetime import datetime, time, timezone, timedelta
 from zoneinfo import ZoneInfo
 import uuid
 
-class AdvancedTimer(hass.Hass):
+from lib.base import BaseApp
+
+class AdvancedTimer(BaseApp):
     def initialize(self):
         """Initialize the Advanced Timer app."""
         self.log("--- Initializing Advanced Timer ---")

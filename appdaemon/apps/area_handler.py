@@ -1,13 +1,14 @@
 # Reference: https://github.com/home-assistant/core/pull/37376#issuecomment-1902087404
-import appdaemon.plugins.hass.hassapi as hass
 import json
+
+from lib.base import BaseApp
 
 # Name of the app instance in apps.yaml
 APP_NAME = "area_handler"
 # Event that fires when the data has been updated
 EVENT_AREAS_UPDATED = "areas_updated"
 
-class AreaHandler(hass.Hass):
+class AreaHandler(BaseApp):
     """
     A global AppDaemon module to handle and cache Home Assistant Area and Device data.
     """

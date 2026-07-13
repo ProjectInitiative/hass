@@ -1,24 +1,7 @@
-utils:
-  module: utils
-  global: true
-
 area_handler:
   module: area_handler
   class: AreaHandler
   priority: 10
-
-# global_state_manager:
-#   module: global_state_manager
-#   class: GlobalStateManager
-#   dependencies:
-#     - utils
-#   storage_path: "/states"
-
-# state_manager:
-#   module: state_manager
-#   class: StateManager
-#   dependencies:
-#     - utils
 
 global_automation_manager:
   module: automation_manager
@@ -27,6 +10,7 @@ global_automation_manager:
 global_notify:
   module: global_notify
   class: GlobalNotify
+  default_notification_group: family
   groups:
     family:
       android:
@@ -40,38 +24,15 @@ global_notify:
 all_lights:
   module: all_lights
   class: AllLights
-  dependencies:
-    - utils
 
-# Configure the new state linker app
 simple_state_linker:
   module: simple_state_linker
   class: SimpleStateLinker
-  
-  # A list of groups to link. Each group is processed independently.
   groups:
-    # --- Example 1: Area-based linking ---
-    # Links all 'light' and 'switch' entities in the "Living Room" area.
-    # If any light or switch in the Living Room turns on, they all turn on.
-    # - area: "Living Room"
-    #   # Optional: Specify which domains to include. Defaults to ["light"].
-    #   domains: ["light", "switch"]
-
-    # --- Example 2: Manual entity list ---
-    # Links a specific set of lights, perhaps in different areas.
-    # If the sofa lamp turns on, the other two will also turn on.
-    # - entities:
-    #     - light.sofa_lamp
-    #     - light.tv_backlight
-    #     - light.bookshelf_light
-
     - entities: # garage
       - light.0x847127fffe991128 # garage light
       - light.ratgdov25i_47a1de_light # garage door light
       - light.0x00124b00226d6999 # workbench light
-
-    # --- Example 3: Another area, with default domain ('light') ---
-    # This will link only the 'light' entities in the office area.
     - area: "Kitchen"
       domain: ["light"]
       exclude:
@@ -127,13 +88,6 @@ garage_automation:
         - auto_car: binary_sensor.pixel_10_pro_xl_android_auto
           bluetooth: sensor.pixel_10_pro_xl_bluetooth_connection
           bt_device: "C4:B7:57:14:0B:FF (TOYOTA Sienna)"
-    # - name: "user2"
-    #   phone: device_tracker.user2_phone
-    #   geocoded_location: sensor.user2_phone_geocoded_location
-    #   cars:
-    #     - auto_car: binary_sensor.user2_car_android_auto
-    #       bluetooth: sensor.user2_car_bluetooth_connection
-    #       bt_device: "XX:XX:XX:XX:XX:XX (USER2 Car)"
   dependencies:
     - global_notify
     - garage_utils
@@ -141,7 +95,7 @@ garage_automation:
 auto_lock_doors:
   module: auto_lock
   class: AutoLock
-  door_lock_map: 
+  door_lock_map:
     binary_sensor.doors_front_door: lock.front_door_lock
     binary_sensor.doors_back_door: lock.back_door_lock
   enable_topic: home/autolock/front/enable
@@ -159,29 +113,18 @@ door_light_automation:
     binary_sensor.doors_garage_door:
       # entrance light
       - light.0x847127fffebb5407
-      # ratgo light
+      # ratgdo light
       - light.ratgdov25i_47a1de_light
       # garage light
       - light.0x847127fffe991128
     binary_sensor.doors_back_door:
       # back porch light
       - light.0x84fd27fffebcd13a
-    # Add more door-to-lights mappings as needed
-  timeout: 5  # 15 minutes in seconds, adjust as needed
+  timeout: 5  # minutes (converted to seconds internally)
   sun_entity: sun.sun
   next_rising_entity: sensor.sun_next_rising
   next_setting_entity: sensor.sun_next_setting
   grace_period: 60  # Grace period in minutes
-  # override_entity: input_boolean.door_light_override
-
-# virtual_switch:
-#   module: all_lights
-#   class: VirtualSwitch
-#   # global: true
-#   dependencies:
-#     - utils
-
-
 
 doorbell:
   module: doorbell_notification
@@ -192,25 +135,14 @@ meeting_indicator:
   module: meeting_indicator
   class: MeetingIndicator
   namespace: default
-  dependencies:
-    - utils
-  sensors: 
+  sensors:
     # office button
     - sensor.0x00158d0009f4df65_action
     # test button
     - sensor.0x00158d00087b83ae_action
   lights:
-    # office light
-    # - light.0x84fd27fffea66599
-
-    # test light
-    # - light.0xb0ce18140017b647
-    
     # living room light
     - light.0xb0ce18140017db76
-
-    # master bedroom lamp
-    # - light.0xb0ce18140017c418
 
 entity_monitor:
   module: entity_monitor
@@ -227,28 +159,19 @@ entity_monitor:
   check_interval: 120
   enable_last_seen: false
 
-# light_group_controller:
-#   module: light_group_controller
-#   class: LightGroupController
-#   switches:
-#     - switch.living_room
-#     - switch.bedroom
-#     - switch.kitchen
-
 fan_auto_off:
   module: fan_auto_off
   class: FanAutoOff
   fans:
     fan.nursery_fan:
       time_limit: 120  # 2 hours in minutes
-      cutoff_time: "21:30:00" 
+      cutoff_time: "21:30:00"
     fan.master_bedroom_fan:
       enforcement_time_start: "21:00:00"
       enforcement_time_end: "06:00:00"
       time_limit: 150  # 2.5 hours in minutes
       cutoff_time: "02:00:00"
 
-    
 blind_schedule:
   module: blind_schedule
   class: BlindSchedule
@@ -263,65 +186,25 @@ blind_schedule:
         - cover.blind_tilt_b643
       defaults:
         direction: up
-        # You can adjust the default 5-minute debounce here if needed
-        # debounce: 300 
       triggers:
-        # --- Trigger 1: When it gets dark, fully close the blinds. ---
-        # Fires when light drops below 2.
         - light_level:
             condition: below
             level: 2
           action: close
-
-        # --- Trigger 2: When it's light enough, open the blinds fully. ---
-        # Fires when light goes above 2. This is the default "daylight" state.
         - light_level:
             condition: above
             level: 2
           action: open
-
-        # --- Trigger 3: When it gets very bright, angle blinds to reduce glare. ---
-        # Fires when light goes above 7. The 75% setting with direction "up" 
-        # creates the angled effect.
         - light_level:
             condition: above
             level: 8
           percentage: 75
-
-        # --- Trigger 4: When it's no longer too bright, return to fully open. ---
-        # Fires when light drops back below 7, returning from the "angled" state.
         - light_level:
             condition: below
             level: 8
           action: open
-
-        # - time: "07:30:00"
-        #   percentage: 50
-
-        # - time: "08:45:00"
-        #   percentage: 75
-
-        # - time: "10:00:00"
-        #   action: open
-
-        # - time: "15:30:00"
-        #   percentage: 75
-
-        # - time: "17:00:00"
-        #   percentage: 50
-
-        # - time: "18:15:00"
-        #   action: close
-
-        # - light_level:
-        #     condition: above
-        #     level: 8
-        #   action: close
-
   blinds:
-
     # dining room
-    
     cover.blind_tilt_9f22:
       defaults:
         direction: up
@@ -331,13 +214,11 @@ blind_schedule:
             level: 2
           action: close
           override: true
-
         - light_level:
             condition: above
             level: 6
           percentage: 75
 
-        
     # back door
     cover.blind_tilt_b643:
       defaults:
@@ -355,13 +236,6 @@ blind_schedule:
       defaults:
         direction: up
       triggers:
-        # - time: "08:00:00"
-        #   action: open
-        # - time: "14:30:00"
-        #   percentage: 75
-        #   direction: up
-        # - time: "17:15:00"
-        #   action: close
         - light_level:
             condition: below
             level: 2
@@ -380,7 +254,7 @@ blind_schedule:
             level: 8
           action: open
 
-water_sensor_monitor: 
+water_sensor_monitor:
   module: water_sensor_monitor
   class: WaterSensorMonitor
   notification_group: "critical_alert_phones"
@@ -389,7 +263,7 @@ water_sensor_monitor:
   main_water_valve_switch: switch.0xa4c1385bc05a3077
   water_sensors:
     - binary_sensor.0xa4c138374c40733e_water_leak # AC Overflow Pan
-    - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electical
+    - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electrical
     - binary_sensor.0xa4c1381e21b2137d_water_leak # Water Heater Overflow Pan
     - binary_sensor.0xa4c1386467236d8a_water_leak # Water softener
     - binary_sensor.0xa4c1384dbe966aa7_water_leak # Kitchen sink
@@ -397,53 +271,25 @@ water_sensor_monitor:
     - binary_sensor.0xa4c138a71398ed05_water_leak # Downstairs bathroom toilet
     - binary_sensor.0xa4c138b035472f64_water_leak # Master bathroom sink 1
     - binary_sensor.0xa4c138f93176fa30_water_leak # Master bathroom sink 2
-    - binary_sensor.0xa4c1384958e7520b_water_leak # Master bathroom toilet
+    - binary_sensor.0xa4c1384958e7520d_water_leak # Master bathroom toilet
     - binary_sensor.0xa4c138d0dff30669_water_leak # Upstairs bathroom sink
     - binary_sensor.0xa4c138e84927fbb5_water_leak # Upstairs bathroom toilet
     - binary_sensor.0xa4c1384dfb580bc7_water_leak # Washer Overflow Pan
   shutoff_exclusion_sensors:
     - binary_sensor.0xa4c138374c40733e_water_leak # AC Overflow Pan
-    - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electical
+    - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electrical
 
 republic_services_schedule:
   module: republic_services_schedule
   class: RepublicServicesSchedule
-  # Address configuration (choose ONE of the following):
-  #
-  # Option A: Set rs_address in secrets.yaml (recommended for initial setup)
-  #   secrets:
-  #     rs_address: "[YOUR_ADDRESS_HERE]"
-  #
-  # Option B: Create an input_text entity in HA called input_text.rs_address
-  #   input_text:
-  #     rs_address:
-  #       name: "RS Address"
-  #       initial: "[YOUR_ADDRESS_HERE]"
-  #   The app will auto-detect this and use it as the address source.
-  #   This is preferred because you can change the address from HA UI.
+  # Address configuration: set rs_address in secrets.yaml OR create
+  # input_text.rs_address entity in HA (preferred — changeable from HA UI).
   schedule_hour: 6  # Hour to refresh schedule (24h format, default: 6 AM)
   dependencies:
     - global_notify
-
-    
-
-# advanced_timer:
-#   module: timer
-#   class: AdvancedTimer
-#   # List of timer configurations
-#   timers:
-#     - id: christmas_tree
-#       name: "christmas tree timer"
-#       timezone: "America/Chicago"
-#       entities:
-#         - switch.christmas_tree
-#       window:
-#         start: "08:00:00"
-#         end: "21:00:00"
 
 testbutton:
   module: testbutton_notification
   class: TestButtonNotification
   sensor: sensor.test_button_action
   namespace: default
-

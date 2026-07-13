@@ -1,7 +1,8 @@
-import appdaemon.plugins.hass.hassapi as hass
 from datetime import time
 
-class BlindSchedule(hass.Hass):
+from lib.base import BaseApp
+
+class BlindSchedule(BaseApp):
     def initialize(self):
         self.log("Initializing BlindSchedule", level="INFO")
         self.groups = self.args.get("groups", {})

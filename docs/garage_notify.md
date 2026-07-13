@@ -3,7 +3,7 @@
 **Module:** `garage_notify_automation`
 **Class:** `GarageNotifyAutomation`
 **Category:** Notification
-**Lines:** 120
+**Lines:** 127
 
 Monitors garage door state and sends notifications if left open. Supports remote enable/disable, auto-close after timeout, and notification actions (close/enable/disable). Integrates with garage_utils for light control.
 
@@ -20,20 +20,11 @@ class: GarageNotifyAutomation
 
 ## Class: `GarageNotifyAutomation`
 
+Monitors garage door state and sends notifications if left open.
+Supports auto-close after timeout, and notification action buttons.
 
 ### Public Methods
 
 | Method |
 |--------|
 | `initialize()` |
-| `door_state_change(entity, attribute, old, new, kwargs)` |
-| `notify_door_event()` |
-| `schedule_checks()` |
-| `cancel_schedules()` |
-| `check_door_open_duration(kwargs)` |
-| `auto_close_door(kwargs)` |
-| `close_door()` |
-| `enable_door_remote()` |
-| `lock_door_remote(kwargs)` |
-| `send_notification(message, title, add_action)` |
-| `handle_notification_action(event_name, data, kwargs)` |

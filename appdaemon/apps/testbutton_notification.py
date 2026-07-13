@@ -1,21 +1,13 @@
-import appdaemon.plugins.hass.hassapi as hass
-from datetime import datetime, timedelta
+from lib.base import BaseApp
 
-class TestButtonNotification(hass.Hass):
+
+class TestButtonNotification(BaseApp):
+    """Sends a notification when the test button (Zigbee action sensor) is pressed."""
 
     def initialize(self):
         self.log(f'initializing sensor: {self.args["sensor"]}')
-        # initialize last_ring variable to avoid extra `If` condition
-        self.last_ring = datetime.now() - timedelta(seconds= 35)
-        self.listen_state(self.on_button_press, self.args["sensor"]) 
-        # self.listen_state(self.on_button_press, self.args["sensor"], new="single") 
-        # self.listen_state(self.on_button_press, self.args["sensor"], new="double") 
-        # self.listen_state(self.on_button_press, self.args["sensor"], new="hold") 
-        # self.listen_state(self.on_button_press, self.args["sensor"], new="release") 
-        # self.listen_state(self.on_button_press, self.args["sensor"], new="none") 
+        self.last_ring = self.get_now()
+        self.listen_state(self._on_button_press, self.args["sensor"])
 
-    def on_button_press(self, entity, attribute, old, new, kwargs):
-        self.log(f'{entity}: recieved state change: {new}')
-        # if self.last_ring < datetime.now() - timedelta(seconds= 30):
-        #     self.last_ring = datetime.now()
-        #     self.log('sending notification')
+    def _on_button_press(self, entity, attribute, old, new, kwargs):
+        self.log(f'{entity}: received state change: {new}')

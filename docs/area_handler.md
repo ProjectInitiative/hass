@@ -3,7 +3,7 @@
 **Module:** `area_handler`
 **Class:** `AreaHandler`
 **Category:** Infrastructure
-**Lines:** 143
+**Lines:** 144
 
 A global AppDaemon module that caches Home Assistant area and device data. Provides helper methods to quickly look up which entities belong to which area, which entities are unassigned, and the area for a given device or entity. Loaded with priority 10 so it's available to all other apps on startup.
 
@@ -12,19 +12,6 @@ A global AppDaemon module that caches Home Assistant area and device data. Provi
 ```yaml
 class: AreaHandler
   priority: 10
-
-# global_state_manager:
-#   module: global_state_manager
-#   class: GlobalStateManager
-#   dependencies:
-#     - utils
-#   storage_path: "/states"
-
-# state_manager:
-#   module: state_manager
-#   class: StateManager
-#   dependencies:
-#     - utils
 ```
 
 ## Class: `AreaHandler`
