@@ -38,6 +38,9 @@ class RepublicServicesSchedule(hass.Hass):
 
         self.log(f"Using address: {self.address}")
 
+        # Get notification app for sending push notifications
+        self.notify_app = self.get_app("global_notify")
+
         # API configuration
         self.api_base = "https://www.republicservices.com/api/v1"
 
@@ -331,9 +334,9 @@ class RepublicServicesSchedule(hass.Hass):
         })
 
         try:
-            self.call_service("notify/family",
-                              title=msg["title"],
-                              message=msg["message"])
+            self.notify_app.notify("family",
+                                   message=msg["message"],
+                                   title=msg["title"])
             self.log(f"Notification sent: {msg['title']}")
         except Exception as e:
             self.log(f"Notification failed for {service_type}: {e}", level="WARNING")
@@ -431,7 +434,7 @@ class RepublicServicesSchedule(hass.Hass):
                 title = "Recycling Pickup Today!"
             
             try:
-                self.call_service("notify/family", title=title, message=msg)
+                self.notify_app.notify("family", message=msg, title=title)
                 self.log(f"TODAY notification sent: {title}")
             except Exception as e:
                 self.log(f"Today notification failed: {e}", level="WARNING")
