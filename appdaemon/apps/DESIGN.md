@@ -48,6 +48,9 @@ global_notify (notification backend)
 
 garage_utils
   ↑ used by garage_automation, garage_notify_automation
+
+state_manager
+  ↑ tracks desired state for lights/fans/covers, reconciles after availability blips
 ```
 
 ## SOP: Adding a New Automation
@@ -123,6 +126,7 @@ my_automation:
 | `lib.mqtt` | `MQTTSwitch`, `MQTTSensor`, `MQTTNumber` | `MQTTSensor(self, "my_sensor", "My Sensor").publish_discovery()` |
 | `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` | `is_time_between(now.time(), parse_time("22:00"), parse_time("06:00"))` |
 | `lib.lights` | `restore_light_state` — restore a light to its previous state | `restore_light_state(self, prev_state_dict)` |
+| `lib.state_manager` | `DesiredStateStore` + `Reconciler` — outage recovery via desired-state | `reconciler.reconcile(entity, state, attrs)` |
 
 ### Notifier API (keyword-only)
 
@@ -184,6 +188,7 @@ These are the old habits that caused the original codebase to rot. Do not reintr
 |--------------|-----------------|
 | `import utils` or `from utils import ...` | `from lib import ...` or `from lib.lights import ...` |
 | `self.get_app("global_notify").notify(...)` | `self.notifier.send(...)` |
+| Polling to check device state (`run_every` + compare) | Event-driven `listen_state` — HA websocket is already subscribed; callbacks are cheap |
 | `datetime.now()` (tz-naive) | `self.datetime()` or `self.get_now()` (tz-aware) |
 | `import pytz` | `from zoneinfo import ZoneInfo` (or just use `lib/time_utils`) |
 | `get_plugin_api("MQTT")` + hand-rolled topics | `from lib.mqtt import MQTTSwitch, MQTTSensor` |

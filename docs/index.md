@@ -25,6 +25,7 @@ Generated automatically by `docs/generate_docs.py`.
 | Meeting Indicator | `meeting_indicator` | Zigbee button press → light indicator system. Presses on a Z... | 49 |
 | Republic Services | `republic_services_schedule` | Fetches Republic Services waste pickup schedule from the pub... | 390 |
 | State Linker | `simple_state_linker` | Synchronizes entity states within defined groups. When any e... | 136 |
+| State Manager | `state_manager` | StateManager — outage recovery via desired-state reconciliat... | 135 |
 | Testbutton Notification | `testbutton_notification` | Sends a notification when the test button (Zigbee action sen... | 13 |
 | Water Sensor | `water_sensor_monitor` | Monitors water leak sensors and automatically shuts off the ... | 62 |
 

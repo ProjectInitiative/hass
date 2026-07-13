@@ -3,6 +3,20 @@ area_handler:
   class: AreaHandler
   priority: 10
 
+state_manager:
+  module: state_manager
+  class: StateManager
+  domains:
+    - light
+    - fan
+    - cover
+    - media_player
+  exclude:
+    - light.backyard_floodlight
+    - light.0x84fd27fffebcd13a
+  snapshot_path: "../data/state_manager.json"
+  snapshot_interval: 60
+
 global_automation_manager:
   module: automation_manager
   class: AutomationManager
