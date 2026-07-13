@@ -10,7 +10,7 @@ class EntityMonitor(hass.Hass):
         self.monitored_entities = self.args.get("entities", [])
         self.check_interval = self.args.get("check_interval", 60)
 
-        self.enable_last_seen = self.args.get("check_last_seen", False)
+        self.enable_last_seen = self.args.get("enable_last_seen", False)
         
         if not self.monitored_entities:
             self.log("No entities specified for monitoring. Please add entities to apps.yaml.")
@@ -78,7 +78,7 @@ class EntityMonitor(hass.Hass):
         data = {"priority": "high"}
         
         # Send notification using the global notify app
-        self.notify_app.notify("all", message=message, title=title, data=data)
+        self.notify_app.send(group="all", message=message, title=title, data=data)
 
 # Sample apps.yaml configuration:
 #

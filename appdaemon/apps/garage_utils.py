@@ -42,4 +42,4 @@ class GarageUtils(hass.Hass):
 
     def notify(self, message):
         self.log(f"Sending notification: {message}")
-        self.get_app("global_notify").notify(group="all", title="Garage Door Automation", message=message)
+        self.get_app("global_notify").send(group="all", message=message, title="Garage Door Automation")

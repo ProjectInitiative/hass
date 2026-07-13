@@ -103,9 +103,9 @@ class GarageNotifyAutomation(hass.Hass):
           {"action": self.notify_action_dismiss_auto_close, "title": "Dismiss auto close"}
         ]}
         if add_action:
-            self.notify_app.notify("all", message=message, title=title, data=data)
+            self.notify_app.send(group="all", message=message, title=title, data=data)
         else:
-            self.notify_app.notify("all", message=message, title=title)
+            self.notify_app.send(group="all", message=message, title=title)
 
         
     def handle_notification_action(self, event_name, data, kwargs):

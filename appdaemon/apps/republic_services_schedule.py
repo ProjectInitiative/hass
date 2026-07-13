@@ -18,8 +18,6 @@ MQTT Discovery entities created:
 
 import appdaemon.plugins.hass.hassapi as hass
 import requests
-import appdaemon.plugins.hass.hassapi as hass
-import requests
 from datetime import datetime, time, timedelta
 import json
 
@@ -111,9 +109,9 @@ class RepublicServicesSchedule(hass.Hass):
             self.run_in(self._send_pickup_notification, seconds_until,
                        service_type=service_type, pickup_date=pickup_date_str)
             self.log(f"Reminder scheduled: {service_type} pickup on {pickup_date_str} "
-                    f"(notify at 5 PM = {reminder_dt.strftime('%a %b %d at %I:%M %p')})")
+                    f"(notify at 9 AM = {reminder_dt.strftime('%a %b %d at %I:%M %p')})")
 
-    def _schedule_reminders(self, trash_next, recycling_next, residential_data):
+    def _schedule_reminders(self, residential_data):
         """
         Schedule notifications for all pickups happening tomorrow.
         Only schedules reminders for pickups where the next date is actually tomorrow.
@@ -191,7 +189,7 @@ class RepublicServicesSchedule(hass.Hass):
         self._publish_status_config()
 
         # Step 5: Schedule pickup reminder notifications for tomorrow pickups
-        self._schedule_reminders(trash_next, recycling_next, residential)
+        self._schedule_reminders(residential)
 
         # Build human-readable status
         status_parts = []
@@ -340,7 +338,7 @@ class RepublicServicesSchedule(hass.Hass):
     def _send_pickup_notification(self, kwargs):
         """
         Send a pickup reminder notification.
-        Called by run_in callback at 5 PM on the day before pickup.
+        Called by run_in callback at 9 AM on the day before pickup.
         """
         service_type = kwargs["service_type"]
         pickup_date = kwargs["pickup_date"]
@@ -365,9 +363,9 @@ class RepublicServicesSchedule(hass.Hass):
         })
 
         try:
-            self.notify_app.notify("family",
-                                   message=msg["message"],
-                                   title=msg["title"])
+            self.notify_app.send(group="family",
+                                  message=msg["message"],
+                                  title=msg["title"])
             self.log(f"Notification sent: {msg['title']}")
         except Exception as e:
             self.log(f"Notification failed for {service_type}: {e}", level="WARNING")
@@ -465,7 +463,7 @@ class RepublicServicesSchedule(hass.Hass):
                 title = "Recycling Pickup Today!"
             
             try:
-                self.notify_app.notify("family", message=msg, title=title)
+                self.notify_app.send(group="family", message=msg, title=title)
                 self.log(f"TODAY notification sent: {title}")
             except Exception as e:
                 self.log(f"Today notification failed: {e}", level="WARNING")

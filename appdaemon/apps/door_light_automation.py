@@ -53,11 +53,10 @@ class DoorLightAutomation(hass.Hass):
             self.log(f"No lights configured for door: {entity}")
 
     def turn_off_lights(self, kwargs):
-        self.log("turning off lights?????")
-        # lights = kwargs["lights"]
-        # for light in lights:
-        #     self.log(f"Turning off light: {light}")
-        #     self.turn_off(light)
+        lights = kwargs["lights"]
+        for light in lights:
+            self.log(f"Turning off light: {light}")
+            self.turn_off(light)
 
     def is_dark(self):
         now = self.get_now()

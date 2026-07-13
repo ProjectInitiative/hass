@@ -62,18 +62,18 @@ class WaterSensorMonitor(hass.Hass):
 
         # Send a critical notification
         self.notifier.send_critical(
-            group_name=self.notification_group, 
-            message=message, 
-            title=title
+            group=self.notification_group,
+            message=message,
+            title=title,
         )
         
         # Optionally, also send a TTS to Android devices in the same group
         if self.send_tts_on_alert:
-            self.notifier.send_tts_android(
-                group_name=self.notification_group, 
-                tts_text=message, 
-                title=title, 
-                use_max_volume=self.tts_use_max_volume
+            self.notifier.send_tts(
+                group=self.notification_group,
+                text=message,
+                title=title,
+                volume_max=self.tts_use_max_volume,
             )
 
     # Example of how another app might call this app (not typically needed for a sensor monitor)

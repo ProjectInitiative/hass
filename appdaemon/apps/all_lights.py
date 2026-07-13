@@ -1,11 +1,5 @@
 import appdaemon.plugins.hass.hassapi as hass
-import appdaemon.plugins.mqtt.mqttapi as mqtt
 import json
-
-from datetime import datetime, timedelta
-from enum import Enum
-from pprint import pformat
-import utils
 
 
 class AllLights(hass.Hass):
@@ -17,13 +11,7 @@ class AllLights(hass.Hass):
         # Define MQTT topic for the switch
         self.topic = "homeassistant/switch/all_lights_switch"
 
-        self.state = self.get_state() 
 
-
-
-        # utils.create_entity(self, "switch", "my_virtual_switch")
-
-        
         # Publish discovery message
         self.mqtt.mqtt_publish(f"{self.topic}/config", self.build_discovery_message(), qos = 0, retain = True)
         # self.mqtt.mqtt_publish(f"{self.topic}/availibility", "online", retain=True)
@@ -35,16 +23,25 @@ class AllLights(hass.Hass):
 
         # setup light data
         self.lights = []
-        for entity in self.state.values():
+        self._refresh_light_list()
+
+        # Publish initial state (ON if any light is on, OFF otherwise)
+        self._publish_current_state()
+
+    def _refresh_light_list(self):
+        """Rebuild the list of lights to control (excludes bedroom lights)."""
+        self.lights = []
+        states = self.get_state()
+        for entity in states.values():
             if entity['entity_id'].split('.')[0] == 'light':
                 # exclude bedroom lights for now...
                 if 'bedroom' not in entity['attributes']['friendly_name'].lower():
                     self.lights.append(entity)
-        for light in self.lights:
-            if 'brightness' in light['attributes'] and light['attributes']['brightness'] != None:
-                self.log(pformat(f"{light['attributes']['friendly_name']} is on"))
-                # only set status, don't set the payload
-                self.mqtt.mqtt_publish(f"{self.topic}", "ON")
+
+    def _publish_current_state(self):
+        """Publish ON if any light is on, OFF if all are off."""
+        any_on = any(light['state'] == 'on' for light in self.lights)
+        self.mqtt.mqtt_publish(f"{self.topic}", "ON" if any_on else "OFF")
         
 
     def build_discovery_message(self):
@@ -66,10 +63,13 @@ class AllLights(hass.Hass):
     def set_state(self, event_name, data, kwargs):
         if "payload" not in data:
             return
-        # payload = json.loads(data["payload"])
         payload = data["payload"]
 
         self.mqtt.mqtt_publish(f"{self.topic}", payload)
+
+        # Refresh the light list so newly added lights are picked up
+        self._refresh_light_list()
+
         if payload == "ON":
             for entity in self.lights:
                 light = self.get_entity(entity['entity_id'])
