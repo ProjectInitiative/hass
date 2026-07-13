@@ -2,35 +2,37 @@
 
 ## Quick Setup
 
-### Step 1: Create the address entity in Home Assistant
+### Step 1: Set the address (choose ONE method)
 
-Add this to your `configuration.yaml` (or use the HA UI to create an input text entity):
+**Option A — `input_text` entity (recommended, changeable from HA UI):**
 
 ```yaml
+# Add to configuration.yaml or create via HA UI:
 input_text:
   rs_address:
     name: "Republic Services Address"
     initial: "[YOUR_ADDRESS_HERE]"
 ```
 
-Or via the HA UI:
-- Settings → Devices & Services → Helpers → + Create Helper → Text → Name it "RS Address", set the initial value
+Or via HA UI: *Settings → Devices & Services → Helpers → + Create Helper → Text → Name it "RS Address", set the initial value*
 
-### Step 2: Configure secrets.yaml
+**Option B — `secrets.yaml` (static, only set once):**
 
-Copy the example and set your address:
 ```bash
 cp secrets.yaml.example secrets.yaml
+# Edit secrets.yaml and set rs_address:
 ```
 
-### Step 3: Install dependencies
+The app checks `input_text.rs_address` first. If it doesn't exist, it falls back to `secrets.rs_address`. You only need one.
+
+### Step 2: Install dependencies
 
 ```bash
 cd appdaemon
 pip install -r requirements.txt
 ```
 
-### Step 4: Restart AppDaemon
+### Step 3: Restart AppDaemon
 
 The app will auto-register since it's in `apps.yaml`.
 
