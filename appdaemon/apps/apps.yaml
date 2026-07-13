@@ -1,3 +1,23 @@
+republic_services_schedule:
+  module: republic_services_schedule
+  class: RepublicServicesSchedule
+  # Address configuration (choose ONE of the following):
+  #
+  # Option A: Set rs_address in secrets.yaml (recommended for initial setup)
+  #   secrets:
+  #     rs_address: "[YOUR_ADDRESS_HERE]"
+  #
+  # Option B: Create an input_text entity in HA called input_text.rs_address
+  #   input_text:
+  #     rs_address:
+  #       name: "RS Address"
+  #       initial: "[YOUR_ADDRESS_HERE]"
+  #   The app will auto-detect this and use it as the address source.
+  #   This is preferred because you can change the address from HA UI.
+  schedule_hour: 6  # Hour to refresh schedule (24h format, default: 6 AM)
+  dependencies:
+    - global_notify
+
 utils:
   module: utils
   global: true
