@@ -97,7 +97,7 @@ class RepublicServicesSchedule(hass.Hass):
         # Build the reminder datetime
         reminder_dt = datetime(
             reminder_date.year, reminder_date.month, reminder_date.day,
-            target_time["hour"], target_time["minute"], target_time["second"]
+            target_time.hour, target_time.minute, target_time.second
         )
         
         # Use .date() for comparison to avoid time-of-day issues
