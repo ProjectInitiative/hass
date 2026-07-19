@@ -105,8 +105,8 @@ class RepublicServicesSchedule(hass.Hass):
             target_time.hour, target_time.minute, target_time.second
         )
         
-        # Use .date() for comparison to avoid time-of-day issues
-        if reminder_dt.date() <= datetime.now().date():
+        # If the reminder time has already passed today, bump to tomorrow
+        if reminder_dt <= datetime.now():
             reminder_dt += timedelta(days=1)
         
         # Calculate seconds until reminder time
