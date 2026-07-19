@@ -46,6 +46,11 @@ class RepublicServicesSchedule(hass.Hass):
         # Get notification app for sending push notifications
         self.notify_app = self.get_app("global_notify")
 
+        # Read notification time from apps.yaml (e.g. "17:00:00" for 5 PM)
+        notify_time_str = self.args.get("notify_time", "17:00:00")
+        self.notify_time = self.parse_time(notify_time_str)
+        self.log(f"Notification time: {self.notify_time.strftime('%I:%M %p')}")
+
         # API configuration
         self.api_base = "https://www.republicservices.com/api/v1"
 
@@ -87,10 +92,10 @@ class RepublicServicesSchedule(hass.Hass):
 
     def _schedule_pickup_reminder(self, pickup_date_str, service_type):
         """
-        Schedule a notification callback for 9 AM the day before pickup.
-        If it's already past 9 AM, schedule for the next eligible reminder.
+        Schedule a notification callback at the configured time the day before pickup.
+        If it's already past that time, schedule for the next eligible reminder.
         """
-        target_time = self.parse_time("09:00:00")
+        target_time = self.notify_time
         pickup_dt = datetime.strptime(pickup_date_str, "%Y-%m-%d").date()
         reminder_date = pickup_dt - timedelta(days=1)
         
@@ -111,7 +116,7 @@ class RepublicServicesSchedule(hass.Hass):
             self.run_in(self._send_pickup_notification, seconds_until,
                        service_type=service_type, pickup_date=pickup_date_str)
             self.log(f"Reminder scheduled: {service_type} pickup on {pickup_date_str} "
-                    f"(notify at 5 PM = {reminder_dt.strftime('%a %b %d at %I:%M %p')})")
+                    f"(notify at {target_time.strftime('%I:%M %p')} = {reminder_dt.strftime('%a %b %d at %I:%M %p')})")
 
     def _schedule_reminders(self, trash_next, recycling_next, residential_data):
         """
