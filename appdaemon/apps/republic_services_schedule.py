@@ -355,11 +355,11 @@ class RepublicServicesSchedule(hass.Hass):
         # Friendly message based on service type
         messages = {
             "trash": {
-                "title": "♻️ Pickup Tomorrow",
+                "title": "🗑️ Trash Tomorrow",
                 "message": f"Trash pickup is {pickup_day_name}! Get your bins out tonight.",
             },
             "recycling": {
-                "title": "🗑️ Pickup Tomorrow",
+                "title": "♻️ Recycling Tomorrow",
                 "message": f"Recycling pickup is {pickup_day_name}! Out bins tonight.",
             },
         }
@@ -460,10 +460,10 @@ class RepublicServicesSchedule(hass.Hass):
         
         if pickup_types_today:
             if len(pickup_types_today) == 2:
-                msg = "🚛🚛🚛 TODAY is both Trash AND Recycling pickup day! Get all bins out! 🚛🚛🚛"
+                msg = "🗑️♻️ TODAY is both Trash AND Recycling pickup day! Get all bins out!"
                 title = "Both Pickups Today!"
             elif "trash" in pickup_types_today:
-                msg = "♻️ TODAY is Trash pickup day! Get your bins out!"
+                msg = "🗑️ TODAY is Trash pickup day! Get your bins out!"
                 title = "Trash Pickup Today!"
             else:
                 msg = "♻️ TODAY is Recycling pickup day! Get your bins out!"
