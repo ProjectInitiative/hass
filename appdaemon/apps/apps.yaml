@@ -422,7 +422,7 @@ republic_services_schedule:
   #   The app will auto-detect this and use it as the address source.
   #   This is preferred because you can change the address from HA UI.
   schedule_hour: 6  # Hour to refresh schedule (24h format, default: 6 AM)
-  notify_time: "08:30:00"  # Time to send pickup reminders (24h format, default: 8:30 am day before pickup)
+  notify_time: "07:00:00"  # Time to send pickup reminders (24h format, default: 7:00 am day before pickup)
   dependencies:
     - global_notify
 
