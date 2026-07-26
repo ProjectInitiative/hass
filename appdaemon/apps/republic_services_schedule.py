@@ -360,7 +360,7 @@ class RepublicServicesSchedule(hass.Hass):
             },
             "recycling": {
                 "title": "♻️ Recycling Tomorrow",
-                "message": f"Recycling pickup is {pickup_day_name}! Out bins tonight.",
+                "message": f"Recycling pickup is {pickup_day_name}! Get your  bins out tonight.",
             },
         }
 
