@@ -10,14 +10,15 @@ Generated automatically by `docs/generate_docs.py`.
 |-----|------|---------|-------|
 | Advanced Timer | `timer` | Time-windowed entity scheduler with enforcement rules. Suppo... | 249 |
 | All Lights | `all_lights` | Controls all lights in the house — toggle them all on/off vi... | 54 |
-| Linked Lights | `linked_lights` | Creates entity-level virtual MQTT lights for configured physi... | 273 |
-| Linked Switches | `linked_switches` | Creates virtual MQTT switches for configured entity, area, or... | 172 |
+| Linked Lights | `linked_lights` | Creates entity-level virtual MQTT lights for configured physi... | 211 |
+| Linked Switches | `linked_switches` | Creates virtual MQTT switches for configured entity, area, or... | 75 |
 | Area Handler | `area_handler` | A global AppDaemon module that caches Home Assistant area an... | 144 |
 | Auto Lock | `auto_lock` | Automatically locks doors when they're left open, with confi... | 111 |
 | Automation Manager | `automation_manager` | MQTT bridge that exposes Home Assistant automations as contr... | 63 |
 | Blind Schedule | `blind_schedule` | Smart blind control system with multiple trigger types: ligh... | 186 |
 | Door Light | `door_light_automation` | Turns on specific lights when a door opens, but only if it's... | 83 |
 | Doorbell | `doorbell_notification` | Sends a notification when the front door visitor button is p... | 16 |
+| Double Click Area Control | `double_click_area_control` | Turns all lights in a switch's Home Assistant area on or off... | 163 |
 | Entity Monitor | `entity_monitor` | Monitors Z-Wave/ESPHome entities for connectivity. Periodica... | 77 |
 | Fan Auto Off | `fan_auto_off` | Auto-turns off fans after a configurable time limit. Support... | 84 |
 | Garage Automation | `garage_automation` | Opens garage lights and garage door when you get in your car... | 46 |
@@ -33,7 +34,7 @@ Generated automatically by `docs/generate_docs.py`.
 
 ## Dependencies
 
-- `lib/` — shared library package (base, notify, mqtt, linked_groups, light_groups, switch_groups, time_utils, lights)
+- `lib/` — shared library package (base, notify, mqtt, linked_groups, double_click, light_groups, switch_groups, time_utils, lights)
 - `area_handler` — priority 10, loaded first
 - `global_notify` — notification router used by many apps
 - `garage_utils` — shared garage logic

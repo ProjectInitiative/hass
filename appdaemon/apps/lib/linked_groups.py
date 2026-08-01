@@ -11,6 +11,36 @@ import re
 from typing import Any, Callable
 
 
+def resolve_linked_entities(
+    config: dict[str, Any],
+    area_handler,
+    domains: list[str],
+) -> set[str]:
+    """Resolve manual, area, and label selectors into entity IDs."""
+    entities = set(config.get("entities", []) or [])
+
+    areas = config.get("areas", config.get("area", []))
+    if isinstance(areas, str):
+        areas = [areas]
+    if area_handler:
+        for area in areas or []:
+            entities.update(area_handler.get_entities_in_area(area, domains))
+
+    labels = config.get("labels", config.get("label", []))
+    if isinstance(labels, str):
+        labels = [labels]
+    if area_handler:
+        for label in labels or []:
+            entities.update(area_handler.get_entities_by_label(label, domains))
+
+    exclusions = set(config.get("exclude", []) or [])
+    return {
+        entity_id for entity_id in entities
+        if str(entity_id).split(".", 1)[0] in domains
+        and entity_id not in exclusions
+    }
+
+
 class LinkedGroupManager:
     """Manage dynamic membership and state listeners for linked groups."""
 
@@ -56,29 +86,7 @@ class LinkedGroupManager:
         return value or f"{prefix}_{index + 1}"
 
     def _resolve_entities(self, config: dict[str, Any]) -> set[str]:
-        entities = set(config.get("entities", []) or [])
-        handler = self.area_handler
-
-        areas = config.get("areas", config.get("area", []))
-        if isinstance(areas, str):
-            areas = [areas]
-        if handler:
-            for area in areas or []:
-                entities.update(handler.get_entities_in_area(area, self.domains))
-
-        labels = config.get("labels", config.get("label", []))
-        if isinstance(labels, str):
-            labels = [labels]
-        if handler:
-            for label in labels or []:
-                entities.update(handler.get_entities_by_label(label, self.domains))
-
-        exclusions = set(config.get("exclude", []) or [])
-        return {
-            entity_id for entity_id in entities
-            if str(entity_id).split(".", 1)[0] in self.domains
-            and entity_id not in exclusions
-        }
+        return resolve_linked_entities(config, self.area_handler, self.domains)
 
     def refresh(self):
         """Resolve membership and notify the entity-specific app."""

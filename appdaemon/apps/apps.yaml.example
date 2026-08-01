@@ -79,6 +79,32 @@ linked_switches:
       #   - switch.doorbell_chime_inside
       #   - switch.doorbell_chime_upstairs
 
+# Double-click whole-room control. Configure event_type and payload keys for
+# the MQTT/Zigbee integration that emits your switch events.
+double_click_area_control:
+  module: double_click_area_control
+  class: DoubleClickAreaControl
+  double_click_window: 0.75
+  switches:
+    - id: private_room_switches
+      event_type: mqtt_event
+      device_id_key: device_id
+      command_key: command
+      on_commands: [on]
+      off_commands: [off]
+      areas:
+        - Office
+        - Living room
+        - Front bedroom
+        - Nursery
+        - Back bedroom
+      # Optional light exclusions/additions:
+      # exclude:
+      #   - light.living_room_tv_backlight
+      # custom_entities:
+      #   add: []
+      #   remove: []
+
 simple_state_linker:
   module: simple_state_linker
   class: SimpleStateLinker

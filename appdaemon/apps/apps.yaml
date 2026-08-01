@@ -57,6 +57,26 @@ linked_switches:
       labels:
         - linked-doorbell-chimes
 
+double_click_area_control:
+  module: double_click_area_control
+  class: DoubleClickAreaControl
+  double_click_window: 0.75
+  switches:
+    - id: private_room_switches
+      # Change event_type/keys if your MQTT integration uses different names.
+      event_type: mqtt_event
+      device_id_key: device_id
+      command_key: command
+      on_commands: [on]
+      off_commands: [off]
+      areas:
+        - Office
+        - Game room
+        - Living room
+        - Front bedroom
+        - Nursery
+        - Back bedroom
+
 simple_state_linker:
   module: simple_state_linker
   class: SimpleStateLinker

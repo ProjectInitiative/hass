@@ -32,6 +32,7 @@ CATEGORY_MAP = {
     "all_lights": "Utility",
     "linked_lights": "Utility",
     "linked_switches": "Utility",
+    "double_click_area_control": "Utility",
     "area_handler": "Infrastructure",
     "auto_lock": "Security",
     "automation_manager": "Infrastructure",
@@ -56,6 +57,7 @@ SHORT_NAME_MAP = {
     "all_lights": "all_lights",
     "linked_lights": "linked_lights",
     "linked_switches": "linked_switches",
+    "double_click_area_control": "double_click_area_control",
     "area_handler": "area_handler",
     "auto_lock": "auto_lock",
     "automation_manager": "automation_manager",
@@ -98,6 +100,7 @@ DESCRIPTIONS = {
     "all_lights": "Controls all lights in the house — toggle them all on/off via a virtual MQTT switch. Excludes bedroom lights.",
     "linked_lights": "Creates entity-level virtual MQTT lights for configured physical-light groups. Dynamically advertises the safe intersection of on/off, brightness, color, and effect capabilities.",
     "linked_switches": "Creates virtual MQTT switches for configured entity, area, or label-based switch groups and fans on/off commands out to every member.",
+    "double_click_area_control": "Turns all lights in a switch's Home Assistant area on or off after two matching MQTT/Zigbee events within a configurable double-click window.",
     "testbutton_notification": "Sends a notification when the test button (Zigbee action sensor) is pressed. Used for testing notification flows.",
 }
 
@@ -196,7 +199,7 @@ Generated automatically by `docs/generate_docs.py`.
         index += f"| {short_name.replace('_', ' ').title()} | `{info['module']}` | {purpose} | {info['lines']} |\n"
 
     index += "\n## Dependencies\n\n"
-    index += "- `lib/` — shared library package (base, notify, mqtt, time_utils, lights)\n"
+    index += "- `lib/` — shared library package (base, notify, mqtt, linked_groups, double_click, light_groups, switch_groups, time_utils, lights)\n"
     index += "- `area_handler` — priority 10, loaded first\n"
     index += "- `global_notify` — notification router used by many apps\n"
     index += "- `garage_utils` — shared garage logic\n"

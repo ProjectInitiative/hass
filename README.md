@@ -20,6 +20,7 @@ full SOP on adding new automations and the library catalog.
 | `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` |
 | `lib.lights` | `restore_light_state` — light state restoration helpers |
 | `lib.linked_groups` | Shared entity-group selection and listener management |
+| `lib.double_click` | Clock-injectable matching double-event detection |
 
 ### App Categories
 
@@ -32,7 +33,7 @@ full SOP on adding new automations and the library catalog.
 `blind_schedule`, `fan_auto_off`
 
 **Utility:** `garage_utils`, `republic_services_schedule`, `all_lights`,
-`linked_lights`, `linked_switches`, `entity_monitor`
+`linked_lights`, `linked_switches`, `double_click_area_control`, `entity_monitor`
 
 **Notification:** `doorbell_notification`, `testbutton_notification`,
 `meeting_indicator`
@@ -95,4 +96,4 @@ full SOP on adding new automations and the library catalog.
 
 - [DESIGN.md](appdaemon/apps/DESIGN.md) — Architecture, SOP, library catalog
 - [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md) — Refactor roadmap
-- [docs/](docs/) — Per-app documentation, including [linked virtual lights](docs/linked_lights.md) and [linked virtual switches](docs/linked_switches.md)
+- [docs/](docs/) — Per-app documentation, including [linked virtual lights](docs/linked_lights.md), [linked virtual switches](docs/linked_switches.md), and [double-click area control](docs/double_click_area_control.md)
