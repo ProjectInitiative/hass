@@ -126,6 +126,7 @@ my_automation:
 | `lib.mqtt` | `MQTTSwitch`, `MQTTLight`, `MQTTSensor`, `MQTTNumber` | `MQTTSensor(self, "my_sensor", "My Sensor").publish_discovery()` |
 | `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` | `is_time_between(now.time(), parse_time("22:00"), parse_time("06:00"))` |
 | `lib.lights` | `restore_light_state` — restore a light to its previous state | `restore_light_state(self, prev_state_dict)` |
+| `lib.linked_groups` | Shared area/label/manual selectors, dynamic membership refresh, and state listeners for linked entities | `LinkedGroupManager(...)` |
 | `lib.light_groups` | Capability intersection, MQTT color conversion, and aggregate state helpers for linked lights | `intersect_capabilities(states)` |
 | `lib.switch_groups` | Aggregate state and command parsing helpers for linked virtual switches | `parse_switch_command(payload)` |
 | `lib.state_manager` | `DesiredStateStore` + `Reconciler` — outage recovery via desired-state | `reconciler.reconcile(entity, state, attrs)` |

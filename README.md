@@ -19,6 +19,7 @@ full SOP on adding new automations and the library catalog.
 | `lib.mqtt` | `MQTTSwitch`/`MQTTLight`/`MQTTSensor`/`MQTTNumber` — consolidated MQTT discovery |
 | `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` |
 | `lib.lights` | `restore_light_state` — light state restoration helpers |
+| `lib.linked_groups` | Shared entity-group selection and listener management |
 
 ### App Categories
 

@@ -33,7 +33,7 @@ Generated automatically by `docs/generate_docs.py`.
 
 ## Dependencies
 
-- `lib/` — shared library package (base, notify, mqtt, time_utils, lights, light_groups, switch_groups)
+- `lib/` — shared library package (base, notify, mqtt, linked_groups, light_groups, switch_groups, time_utils, lights)
 - `area_handler` — priority 10, loaded first
 - `global_notify` — notification router used by many apps
 - `garage_utils` — shared garage logic
