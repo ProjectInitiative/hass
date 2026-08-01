@@ -175,6 +175,10 @@ class LinkedLights(BaseApp):
                     gid, event, data, kwargs
                 )
             )
+            self.log(
+                f"Listening for linked light commands on "
+                f"{group['light'].command_topic}"
+            )
         elif signature != group["capability_signature"]:
             light = group["light"]
             for key, value in self._mqtt_light_kwargs(capabilities).items():
@@ -223,6 +227,7 @@ class LinkedLights(BaseApp):
         return value if isinstance(value, dict) else None
 
     def _handle_command(self, group_id, event_name, data, kwargs):
+        self.log(f"Received linked light command for '{group_id}': {data!r}")
         group = self._groups.get(group_id)
         command = self._command_value(data)
         if not group or command is None:
