@@ -139,6 +139,17 @@ def clamp_brightness(value: Any) -> int | None:
         return None
 
 
+def mired_to_kelvin(value: Any) -> int | None:
+    """Convert an MQTT/HA mired value to the current HA service field."""
+    try:
+        mireds = int(float(value))
+        if mireds <= 0:
+            return None
+        return round(1_000_000 / mireds)
+    except (TypeError, ValueError, ZeroDivisionError):
+        return None
+
+
 def mqtt_color_to_service_data(color: Any) -> dict[str, Any]:
     """Translate MQTT JSON light color fields to HA light service fields."""
     if not isinstance(color, dict):

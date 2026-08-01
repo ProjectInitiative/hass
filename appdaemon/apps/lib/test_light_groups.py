@@ -10,6 +10,7 @@ from lib.light_groups import (  # noqa: E402
     capability_signature,
     clamp_brightness,
     intersect_capabilities,
+    mired_to_kelvin,
     mqtt_color_to_service_data,
     state_payload,
 )
@@ -98,6 +99,8 @@ def test_state_payload_ignores_unavailable_members():
 
 def test_mqtt_colors_and_brightness_are_validated():
     assert mqtt_color_to_service_data({"r": 1, "g": 2, "b": 3}) == {"rgb_color": [1, 2, 3]}
+    assert mired_to_kelvin(153) == 6536
+    assert mired_to_kelvin(0) is None
     assert mqtt_color_to_service_data({"h": 10, "s": 20}) == {"hs_color": [10.0, 20.0]}
     assert clamp_brightness(999) == 255
     assert clamp_brightness(0) == 1

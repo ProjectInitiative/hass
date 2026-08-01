@@ -18,6 +18,7 @@ from lib.light_groups import (
     capability_signature,
     clamp_brightness,
     intersect_capabilities,
+    mired_to_kelvin,
     mqtt_color_to_service_data,
     state_payload,
 )
@@ -127,9 +128,12 @@ class LinkedLights(BaseApp):
 
         handles = []
         for entity_id in entities:
+            # "all" makes brightness/color/effect changes refresh the
+            # virtual entity even when the light remains on.
             handle = self.listen_state(
                 self._state_change_cb,
                 entity_id,
+                attribute="all",
                 group_id=group_id,
             )
             if handle is not None:
@@ -259,11 +263,23 @@ class LinkedLights(BaseApp):
                     color_temp = max(capabilities["min_mireds"], color_temp)
                 if capabilities["max_mireds"] is not None:
                     color_temp = min(capabilities["max_mireds"], color_temp)
-                service_data["color_temp"] = color_temp
+                # HA 2026.x removed the legacy color_temp service field;
+                # MQTT JSON still expresses temperature in mireds.
+                color_temp_kelvin = mired_to_kelvin(color_temp)
+                if color_temp_kelvin is not None:
+                    service_data["color_temp_kelvin"] = color_temp_kelvin
             except (TypeError, ValueError):
                 pass
         if "color" in command and capabilities["rgb"]:
             service_data.update(mqtt_color_to_service_data(command["color"]))
+        # Accept these too for brokers/tools that publish HA-style color
+        # fields instead of the MQTT JSON schema's nested color object.
+        if "rgb_color" in command and capabilities["rgb"]:
+            service_data["rgb_color"] = command["rgb_color"]
+        if "hs_color" in command and capabilities["rgb"]:
+            service_data["hs_color"] = command["hs_color"]
+        if "xy_color" in command and capabilities["rgb"]:
+            service_data["xy_color"] = command["xy_color"]
         if "effect" in command and capabilities["effect"]:
             effect = command["effect"]
             if effect in capabilities["effect_list"]:
