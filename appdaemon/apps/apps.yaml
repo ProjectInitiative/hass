@@ -48,6 +48,15 @@ linked_lights:
       labels:
         - linked-track-lights
 
+linked_switches:
+  module: linked_switches
+  class: LinkedSwitches
+  groups:
+    - id: doorbell_chimes
+      name: Doorbell Chimes
+      labels:
+        - linked-doorbell-chimes
+
 simple_state_linker:
   module: simple_state_linker
   class: SimpleStateLinker

@@ -309,5 +309,7 @@ capability layer is now implemented by `linked_lights.py`:
 - `lib/light_groups.py` contains AppDaemon-independent logic and tests.
 
 Deployment-specific groups intentionally belong in `apps.yaml`; use
-`apps.yaml.example` and `docs/linked_lights.md` rather than guessing entity
-IDs in the checked-in installation config.
+`apps.yaml.example` and the linked-light/linked-switch documentation rather
+than guessing entity IDs in the checked-in installation config. Simple switch
+groups are provided by `linked_switches.py` using the same label/area/manual
+selection pattern.

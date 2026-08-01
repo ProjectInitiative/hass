@@ -31,6 +31,7 @@ LIB_DIR = os.path.join(APP_DIR, "lib")
 CATEGORY_MAP = {
     "all_lights": "Utility",
     "linked_lights": "Utility",
+    "linked_switches": "Utility",
     "area_handler": "Infrastructure",
     "auto_lock": "Security",
     "automation_manager": "Infrastructure",
@@ -54,6 +55,7 @@ CATEGORY_MAP = {
 SHORT_NAME_MAP = {
     "all_lights": "all_lights",
     "linked_lights": "linked_lights",
+    "linked_switches": "linked_switches",
     "area_handler": "area_handler",
     "auto_lock": "auto_lock",
     "automation_manager": "automation_manager",
@@ -95,6 +97,7 @@ DESCRIPTIONS = {
     "doorbell_notification": "Sends a notification when the front door visitor button is pressed. Listens to a binary sensor entity and triggers a notify call.",
     "all_lights": "Controls all lights in the house — toggle them all on/off via a virtual MQTT switch. Excludes bedroom lights.",
     "linked_lights": "Creates entity-level virtual MQTT lights for configured physical-light groups. Dynamically advertises the safe intersection of on/off, brightness, color, and effect capabilities.",
+    "linked_switches": "Creates virtual MQTT switches for configured entity, area, or label-based switch groups and fans on/off commands out to every member.",
     "testbutton_notification": "Sends a notification when the test button (Zigbee action sensor) is pressed. Used for testing notification flows.",
 }
 

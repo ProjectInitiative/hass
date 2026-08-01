@@ -41,7 +41,7 @@ lib/ (base, notify, mqtt, time_utils, lights)
   ↑ consumed by all apps
 
 area_handler (priority: 10, loads first)
-  ↑ fires EVENT_AREAS_UPDATED → simple_state_linker and linked_lights listen
+  ↑ fires EVENT_AREAS_UPDATED → simple_state_linker, linked_lights, and linked_switches listen
 
 global_notify (notification backend)
   ↑ wrapped by lib.notify.Notifier → used by all notifying apps
@@ -127,6 +127,7 @@ my_automation:
 | `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` | `is_time_between(now.time(), parse_time("22:00"), parse_time("06:00"))` |
 | `lib.lights` | `restore_light_state` — restore a light to its previous state | `restore_light_state(self, prev_state_dict)` |
 | `lib.light_groups` | Capability intersection, MQTT color conversion, and aggregate state helpers for linked lights | `intersect_capabilities(states)` |
+| `lib.switch_groups` | Aggregate state and command parsing helpers for linked virtual switches | `parse_switch_command(payload)` |
 | `lib.state_manager` | `DesiredStateStore` + `Reconciler` — outage recovery via desired-state | `reconciler.reconcile(entity, state, attrs)` |
 
 ### Notifier API (keyword-only)
@@ -159,6 +160,10 @@ switch.publish_state("ON")
 # Light groups
 # Use linked_lights.py for configurable entity/area/label groups. It publishes
 # an MQTT JSON-schema light and computes a safe capability intersection.
+
+# Linked switches
+# Use linked_switches.py for label/area/manual groups of simple switches.
+# It fans out switch/turn_on and switch/turn_off service calls.
 
 # Sensor (read-only, with attributes + device grouping)
 sensor = MQTTSensor(

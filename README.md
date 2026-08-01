@@ -31,7 +31,7 @@ full SOP on adding new automations and the library catalog.
 `blind_schedule`, `fan_auto_off`
 
 **Utility:** `garage_utils`, `republic_services_schedule`, `all_lights`,
-`linked_lights`, `entity_monitor`
+`linked_lights`, `linked_switches`, `entity_monitor`
 
 **Notification:** `doorbell_notification`, `testbutton_notification`,
 `meeting_indicator`
@@ -48,6 +48,7 @@ full SOP on adding new automations and the library catalog.
 ### 💡 Lighting Control
 - Global "all lights" virtual switch via MQTT
 - Entity-level linked virtual lights with dynamic on/off, dimming, color, and effect capabilities
+- Label-based linked virtual switches for synchronized simple switches
 - Door-activated lighting (night-only with sun tracking)
 - Group-based light state linking with grace-period debounce
 - Meeting status indicator integration
@@ -93,4 +94,4 @@ full SOP on adding new automations and the library catalog.
 
 - [DESIGN.md](appdaemon/apps/DESIGN.md) — Architecture, SOP, library catalog
 - [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md) — Refactor roadmap
-- [docs/](docs/) — Per-app documentation, including [linked virtual lights](docs/linked_lights.md)
+- [docs/](docs/) — Per-app documentation, including [linked virtual lights](docs/linked_lights.md) and [linked virtual switches](docs/linked_switches.md)

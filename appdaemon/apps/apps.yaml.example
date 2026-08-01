@@ -66,6 +66,19 @@ linked_lights:
       area: "Living room"
       exclude: []
 
+linked_switches:
+  module: linked_switches
+  class: LinkedSwitches
+  groups:
+    - id: doorbell_chimes
+      name: Doorbell Chimes
+      labels:
+        - linked-doorbell-chimes
+      # Manual fallback:
+      # entities:
+      #   - switch.doorbell_chime_inside
+      #   - switch.doorbell_chime_upstairs
+
 simple_state_linker:
   module: simple_state_linker
   class: SimpleStateLinker
