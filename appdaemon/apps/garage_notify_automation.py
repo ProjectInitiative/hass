@@ -26,7 +26,7 @@ class GarageNotifyAutomation(BaseApp):
         if not self.garage_door:
             return
 
-        self.garage_utils = self.get_app("garage_utils")
+        self.garage_utils  # resolve early via BaseApp's cached accessor
         self.notifier  # resolve early
 
         self.listen_state(self._door_state_change, self.garage_door)

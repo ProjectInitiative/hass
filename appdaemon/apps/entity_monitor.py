@@ -39,15 +39,15 @@ class EntityMonitor(BaseApp):
             self.entity_timers[entity] = self.run_in(self._timer_expired, self.check_interval, entity=entity)
 
     def _entity_state_change(self, entity, attribute, old, new, kwargs):
-        self._check_entity(entity)
+        self._check_entity_health(entity)
         self._start_entity_timer(entity)
 
     def _timer_expired(self, kwargs):
         entity = kwargs['entity']
-        self._check_entity(entity)
+        self._check_entity_health(entity)
         self._start_entity_timer(entity)
 
-    def _check_entity(self, entity):
+    def _check_entity_health(self, entity):
         state = self.get_state(entity)
         entity_all = self.get_state(entity, attribute='all')
         entity_friendly_name = entity_all['attributes']['friendly_name']
