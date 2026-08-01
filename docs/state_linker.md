@@ -17,7 +17,7 @@ class: SimpleStateLinker
       - light.ratgdov25i_47a1de_light # garage door light
       - light.0x00124b00226d6999 # workbench light
     - area: "Kitchen"
-      domain: ["light"]
+      domains: ["light"]
       exclude:
         - light.kitchen_sink_light
     - area: "Office"

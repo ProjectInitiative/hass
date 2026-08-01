@@ -10,6 +10,7 @@ Generated automatically by `docs/generate_docs.py`.
 |-----|------|---------|-------|
 | Advanced Timer | `timer` | Time-windowed entity scheduler with enforcement rules. Suppo... | 249 |
 | All Lights | `all_lights` | Controls all lights in the house — toggle them all on/off vi... | 54 |
+| Linked Lights | `linked_lights` | Creates entity-level virtual MQTT lights for configured physi... | 273 |
 | Area Handler | `area_handler` | A global AppDaemon module that caches Home Assistant area an... | 144 |
 | Auto Lock | `auto_lock` | Automatically locks doors when they're left open, with confi... | 111 |
 | Automation Manager | `automation_manager` | MQTT bridge that exposes Home Assistant automations as contr... | 63 |
@@ -31,7 +32,7 @@ Generated automatically by `docs/generate_docs.py`.
 
 ## Dependencies
 
-- `lib/` — shared library package (base, notify, mqtt, time_utils, lights)
+- `lib/` — shared library package (base, notify, mqtt, time_utils, lights, light_groups)
 - `area_handler` — priority 10, loaded first
 - `global_notify` — notification router used by many apps
 - `garage_utils` — shared garage logic

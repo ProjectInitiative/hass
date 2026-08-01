@@ -2,7 +2,7 @@
 lib.mqtt — consolidated MQTT discovery entity helpers.
 
 Provides a single MQTTDiscoveryEntity base class and subclasses (MQTTSwitch,
-MQTTNumber, MQTTSensor) that standardize how AppDaemon apps expose virtual
+MQTTLight, MQTTNumber, MQTTSensor) that standardize how AppDaemon apps expose virtual
 entities via Home Assistant MQTT Discovery.
 
 Previously, MQTT discovery was hand-rolled three different ways:
@@ -18,7 +18,7 @@ Topic convention (all entities):
     homeassistant/<type>/<object_id>/availability — LWT / online-offline
 
 Usage:
-    from lib.mqtt import MQTTSwitch, MQTTSensor
+    from lib.mqtt import MQTTSwitch, MQTTLight, MQTTSensor
 
     # Sensor (read-only, e.g. a schedule status)
     sensor = MQTTSensor(self, "republic_services_trash_next_pickup",
@@ -172,6 +172,45 @@ class MQTTSwitch(MQTTDiscoveryEntity):
             "state_on": "ON",
             "state_off": "OFF",
         }
+
+
+class MQTTLight(MQTTDiscoveryEntity):
+    """A JSON-schema MQTT light with dynamically advertised capabilities.
+
+    Commands and state use Home Assistant's MQTT light JSON schema.  The
+    caller can republish discovery when the member set or capability
+    intersection changes.
+    """
+
+    def __init__(self, app, object_id, name, *, supported_color_modes=None,
+                 brightness=False, effect_list=None, min_mireds=None,
+                 max_mireds=None, device_name=None, device_id=None):
+        super().__init__(app, object_id, name, device_name, device_id)
+        self.supported_color_modes = list(supported_color_modes or ["onoff"])
+        self.brightness = bool(brightness)
+        self.effect_list = sorted(effect_list or [])
+        self.min_mireds = min_mireds
+        self.max_mireds = max_mireds
+
+    def _entity_type(self):
+        return "light"
+
+    @property
+    def discovery_payload(self):
+        payload = {
+            "schema": "json",
+            "command_topic": self.command_topic,
+            "brightness": self.brightness,
+            "supported_color_modes": self.supported_color_modes,
+        }
+        if self.min_mireds is not None:
+            payload["min_mireds"] = self.min_mireds
+        if self.max_mireds is not None:
+            payload["max_mireds"] = self.max_mireds
+        if self.effect_list:
+            payload["effect"] = True
+            payload["effect_list"] = self.effect_list
+        return payload
 
 
 class MQTTSensor(MQTTDiscoveryEntity):

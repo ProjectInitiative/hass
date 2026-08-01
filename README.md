@@ -16,7 +16,7 @@ full SOP on adding new automations and the library catalog.
 |--------|---------|
 | `lib.base` | `BaseApp` — common lifecycle, arg helpers, service accessors |
 | `lib.notify` | `Notifier` — uniform keyword-only wrapper over `global_notify` |
-| `lib.mqtt` | `MQTTSwitch`/`MQTTSensor`/`MQTTNumber` — consolidated MQTT discovery |
+| `lib.mqtt` | `MQTTSwitch`/`MQTTLight`/`MQTTSensor`/`MQTTNumber` — consolidated MQTT discovery |
 | `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` |
 | `lib.lights` | `restore_light_state` — light state restoration helpers |
 
@@ -31,7 +31,7 @@ full SOP on adding new automations and the library catalog.
 `blind_schedule`, `fan_auto_off`
 
 **Utility:** `garage_utils`, `republic_services_schedule`, `all_lights`,
-`entity_monitor`
+`linked_lights`, `entity_monitor`
 
 **Notification:** `doorbell_notification`, `testbutton_notification`,
 `meeting_indicator`
@@ -47,6 +47,7 @@ full SOP on adding new automations and the library catalog.
 
 ### 💡 Lighting Control
 - Global "all lights" virtual switch via MQTT
+- Entity-level linked virtual lights with dynamic on/off, dimming, color, and effect capabilities
 - Door-activated lighting (night-only with sun tracking)
 - Group-based light state linking with grace-period debounce
 - Meeting status indicator integration
@@ -92,4 +93,4 @@ full SOP on adding new automations and the library catalog.
 
 - [DESIGN.md](appdaemon/apps/DESIGN.md) — Architecture, SOP, library catalog
 - [OVERHAUL_PLAN.md](OVERHAUL_PLAN.md) — Refactor roadmap
-- [docs/](docs/) — Auto-generated per-app documentation
+- [docs/](docs/) — Per-app documentation, including [linked virtual lights](docs/linked_lights.md)

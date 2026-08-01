@@ -12,7 +12,7 @@ appdaemon/apps/
   lib/              ← shared library package (import from here)
     base.py         ← BaseApp — common lifecycle, arg helpers, accessors
     notify.py       ← Notifier — uniform keyword-only wrapper over global_notify
-    mqtt.py         ← MQTTDiscoveryEntity + MQTTSwitch / MQTTSensor / MQTTNumber
+    mqtt.py         ← MQTTDiscoveryEntity + MQTTSwitch / MQTTLight / MQTTSensor / MQTTNumber
     time_utils.py   ← parse_time, is_time_between, seconds_until, parse_iso
     lights.py       ← restore_light_state — light state restoration
   area_handler.py   ← caches HA areas/devices, fires EVENT_AREAS_UPDATED (priority 10)
@@ -41,7 +41,7 @@ lib/ (base, notify, mqtt, time_utils, lights)
   ↑ consumed by all apps
 
 area_handler (priority: 10, loads first)
-  ↑ fires EVENT_AREAS_UPDATED → simple_state_linker listens
+  ↑ fires EVENT_AREAS_UPDATED → simple_state_linker and linked_lights listen
 
 global_notify (notification backend)
   ↑ wrapped by lib.notify.Notifier → used by all notifying apps
@@ -123,9 +123,10 @@ my_automation:
 |--------|----------|---------|
 | `lib.base` | `BaseApp`, `self.notifier`, `self.area_handler`, `self.garage_utils`, `self.arg()`, `self.required_arg()` | `self.notifier.send(message="Hi")` |
 | `lib.notify` | `Notifier` with `send` / `send_critical` / `send_tts` (all keyword-only) | `self.notifier.send_critical(message="Alert!", group="critical_alert_phones")` |
-| `lib.mqtt` | `MQTTSwitch`, `MQTTSensor`, `MQTTNumber` | `MQTTSensor(self, "my_sensor", "My Sensor").publish_discovery()` |
+| `lib.mqtt` | `MQTTSwitch`, `MQTTLight`, `MQTTSensor`, `MQTTNumber` | `MQTTSensor(self, "my_sensor", "My Sensor").publish_discovery()` |
 | `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` | `is_time_between(now.time(), parse_time("22:00"), parse_time("06:00"))` |
 | `lib.lights` | `restore_light_state` — restore a light to its previous state | `restore_light_state(self, prev_state_dict)` |
+| `lib.light_groups` | Capability intersection, MQTT color conversion, and aggregate state helpers for linked lights | `intersect_capabilities(states)` |
 | `lib.state_manager` | `DesiredStateStore` + `Reconciler` — outage recovery via desired-state | `reconciler.reconcile(entity, state, attrs)` |
 
 ### Notifier API (keyword-only)
@@ -154,6 +155,10 @@ switch = MQTTSwitch(self, "all_lights_switch", "All House Lights")
 switch.publish_discovery()
 switch.listen_command(self.handle_command)  # callback(event_name, data, kwargs)
 switch.publish_state("ON")
+
+# Light groups
+# Use linked_lights.py for configurable entity/area/label groups. It publishes
+# an MQTT JSON-schema light and computes a safe capability intersection.
 
 # Sensor (read-only, with attributes + device grouping)
 sensor = MQTTSensor(

@@ -39,6 +39,15 @@ all_lights:
   module: all_lights
   class: AllLights
 
+linked_lights:
+  module: linked_lights
+  class: LinkedLights
+  groups:
+    - id: track_lights
+      name: Track Lights
+      labels:
+        - linked-track-lights
+
 simple_state_linker:
   module: simple_state_linker
   class: SimpleStateLinker
@@ -48,7 +57,7 @@ simple_state_linker:
       - light.ratgdov25i_47a1de_light # garage door light
       - light.0x00124b00226d6999 # workbench light
     - area: "Kitchen"
-      domain: ["light"]
+      domains: ["light"]
       exclude:
         - light.kitchen_sink_light
     - area: "Office"

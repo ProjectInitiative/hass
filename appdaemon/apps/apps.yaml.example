@@ -44,6 +44,28 @@ all_lights:
   module: all_lights
   class: AllLights
 
+# Entity-level virtual lights.  A group may use explicit entities, an area,
+# or Home Assistant labels.  Members must be lights; exclusions are applied
+# after all selectors are combined.
+linked_lights:
+  module: linked_lights
+  class: LinkedLights
+  groups:
+    - id: game_room_track
+      name: Game Room Track Lights
+      labels:
+        - linked-track-lights
+      # Manual fallback (also valid without labels/area):
+      # entities:
+      #   - light.track_left
+      #   - light.track_center
+      #   - light.track_right
+      exclude: []
+    - id: living_room_color
+      name: Living Room Color Group
+      area: "Living room"
+      exclude: []
+
 simple_state_linker:
   module: simple_state_linker
   class: SimpleStateLinker

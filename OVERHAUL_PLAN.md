@@ -292,3 +292,22 @@ After each phase: reload AppDaemon, smoke-test the affected apps, commit.
    but exposes them through one uniform keyword-only surface via `lib/notify.py`.
 6. ✅ Tooling → `.ruff.toml` standalone, no `pyproject.toml`.
    `requirements.txt` remains the single install source of truth for the container.
+
+---
+
+## Follow-up — entity-level linked lights
+
+The original overhaul preserved `all_lights` (house-level on/off) and
+`simple_state_linker` (area/manual on/off synchronization). The missing
+capability layer is now implemented by `linked_lights.py`:
+
+- `MQTTLight` exposes Home Assistant's JSON-schema MQTT light entity.
+- `LinkedLights` supports explicit entities, areas, and Home Assistant labels.
+- Discovery is recomputed from the safe intersection of member capabilities.
+- Commands fan out on/off, brightness, color temperature, RGB/HS color,
+  effects, and transitions to every member.
+- `lib/light_groups.py` contains AppDaemon-independent logic and tests.
+
+Deployment-specific groups intentionally belong in `apps.yaml`; use
+`apps.yaml.example` and `docs/linked_lights.md` rather than guessing entity
+IDs in the checked-in installation config.

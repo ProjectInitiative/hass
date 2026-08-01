@@ -26,6 +26,8 @@ class AreaHandler(BaseApp):
         self._all_ha_entities = set()
         # A dict mapping a Device ID to an Area Name
         self._device_to_area_map = {}
+        # A dict mapping a Home Assistant label ID/name to its entities
+        self._labels_with_entities = {}
         
         # Get refresh interval from config (defaults to every 10 minutes)
         refresh_interval_seconds = self.args.get("refresh_interval", 600)
@@ -71,11 +73,58 @@ class AreaHandler(BaseApp):
             """
             
             rendered_string = await self.render_template(jinja_template)
-            data = rendered_string
-            
+            if isinstance(rendered_string, str):
+                data = json.loads(rendered_string)
+            else:
+                data = rendered_string
+            if not isinstance(data, dict):
+                raise ValueError("Area template did not return an object")
+
             # --- Store the data ---
             self._areas_with_entities = data.get("areas", {})
             self._device_to_area_map = data.get("devices", {})
+
+            # Label helpers are not available in every Home Assistant version.
+            # Keep area discovery healthy when label_entities() is unavailable.
+            try:
+                label_template = """
+                {
+                  {% for label_id in labels() %}
+                    {{ label_id | tojson }}: {{ label_entities(label_id) | list | tojson }}{% if not loop.last %},{% endif %}
+                  {% endfor %}
+                }
+                """
+                rendered_labels = await self.render_template(label_template)
+                label_data = (
+                    json.loads(rendered_labels)
+                    if isinstance(rendered_labels, str)
+                    else rendered_labels
+                )
+                self._labels_with_entities = label_data if isinstance(label_data, dict) else {}
+                # Label selectors are commonly written using the HA UI name,
+                # while labels() returns registry IDs.  Add name aliases when
+                # the optional label_name() helper is available.
+                try:
+                    label_names_template = """
+                    {
+                      {% for label_id in labels() %}
+                        {{ label_name(label_id) | tojson }}: {{ label_entities(label_id) | list | tojson }}{% if not loop.last %},{% endif %}
+                      {% endfor %}
+                    }
+                    """
+                    rendered_names = await self.render_template(label_names_template)
+                    name_data = (
+                        json.loads(rendered_names)
+                        if isinstance(rendered_names, str)
+                        else rendered_names
+                    )
+                    if isinstance(name_data, dict):
+                        self._labels_with_entities.update(name_data)
+                except Exception as name_error:
+                    self.log(f"Label name aliases unavailable: {name_error}", level="DEBUG")
+            except Exception as label_error:
+                self._labels_with_entities = {}
+                self.log(f"Label discovery unavailable: {label_error}", level="DEBUG")
             self._all_ha_entities = set(await self.get_state())
             
             # Create a flat set of all entities that are in any area
@@ -127,6 +176,19 @@ class AreaHandler(BaseApp):
         ]
         
         return filtered_entities
+
+    def get_entities_by_label(self, label, domains=None):
+        """Return entities assigned to a Home Assistant label.
+
+        ``label`` may be a label ID or name, matching Home Assistant's
+        ``label_entities()`` template helper.  Label groups are optional; an
+        older HA version simply returns an empty list.
+        """
+        entities = self._labels_with_entities.get(label, [])
+        if not domains:
+            return list(entities)
+        domains = set(domains)
+        return [entity_id for entity_id in entities if entity_id.split(".")[0] in domains]
 
     def get_area_for_entity(self, entity_id):
         """Returns the area name for a given entity_id, or None if not found."""
