@@ -15,7 +15,6 @@ from typing import Any
 from area_handler import APP_NAME as AREA_HANDLER_APP_NAME, EVENT_AREAS_UPDATED
 from lib.base import BaseApp
 from lib.light_groups import (
-    UNAVAILABLE_STATES,
     capability_signature,
     clamp_brightness,
     intersect_capabilities,
@@ -184,9 +183,11 @@ class LinkedLights(BaseApp):
 
         light = group["light"]
         light.publish_state(json.dumps(state_payload(states, capabilities), separators=(",", ":")))
-        light.publish_available(
-            bool(states) and any(state["state"] not in UNAVAILABLE_STATES for state in states)
-        )
+        # Availability describes the virtual controller, not the current
+        # availability of every member.  A configured group remains usable
+        # (and can queue commands while devices recover) even if all members
+        # briefly report unavailable during HA startup.
+        light.publish_available(bool(group["entities"]))
 
     @staticmethod
     def _mqtt_light_kwargs(capabilities: dict[str, Any]) -> dict[str, Any]:
@@ -203,6 +204,8 @@ class LinkedLights(BaseApp):
         payload = data.get("payload")
         if isinstance(payload, bytes):
             payload = payload.decode("utf-8", errors="replace")
+        if payload is None or (isinstance(payload, str) and not payload.strip()):
+            return None
         if isinstance(payload, dict):
             return payload
         if not isinstance(payload, str):
@@ -219,10 +222,12 @@ class LinkedLights(BaseApp):
         group = self._groups.get(group_id)
         command = self._command_value(data)
         if not group or command is None:
-            self.log(
-                f"Ignoring malformed MQTT command for linked light '{group_id}'.",
-                level="WARNING",
-            )
+            payload = data.get("payload") if isinstance(data, dict) else data
+            if payload not in (None, "", b""):
+                self.log(
+                    f"Ignoring malformed MQTT command for linked light '{group_id}'.",
+                    level="WARNING",
+                )
             return
 
         capabilities = group["capabilities"]

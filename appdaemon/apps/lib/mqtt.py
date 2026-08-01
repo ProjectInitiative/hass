@@ -119,6 +119,8 @@ class MQTTDiscoveryEntity:
             "unique_id": self.object_id,
             "state_topic": self.state_topic,
             "availability_topic": self.availability_topic,
+            "payload_available": "online",
+            "payload_not_available": "offline",
         }
         if self._device_info:
             payload["device"] = self._device_info

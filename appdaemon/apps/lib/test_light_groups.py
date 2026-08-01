@@ -119,8 +119,10 @@ def test_mqtt_light_discovery_uses_json_schema():
         brightness=True,
         effect_list=["rainbow"],
     )
-    payload = light_entity.discovery_payload
+    payload = {**light_entity._base_payload(), **light_entity.discovery_payload}
     assert payload["schema"] == "json"
+    assert payload["payload_available"] == "online"
+    assert payload["payload_not_available"] == "offline"
     assert payload["brightness"] is True
     assert payload["supported_color_modes"] == ["brightness", "rgb"]
     assert payload["effect_list"] == ["rainbow"]
