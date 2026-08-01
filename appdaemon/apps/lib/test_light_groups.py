@@ -48,6 +48,15 @@ def test_capabilities_use_intersection():
     assert caps["max_mireds"] == 400
 
 
+def test_hs_and_xy_modes_are_color_capable():
+    caps = intersect_capabilities([
+        light("on", supported_color_modes=["hs"]),
+        light("on", supported_color_modes=["hs"]),
+    ])
+    assert caps["rgb"] is True
+    assert caps["supported_color_modes"] == {"hs"}
+
+
 def test_mixed_features_do_not_get_advertised():
     caps = intersect_capabilities([
         light("on", supported_color_modes=["rgb"]),

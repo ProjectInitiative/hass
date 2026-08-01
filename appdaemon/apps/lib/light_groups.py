@@ -11,7 +11,8 @@ from typing import Any
 
 UNAVAILABLE_STATES = {"unavailable", "unknown", "none", None}
 ONOFF_MODES = {"onoff"}
-RGB_MODES = {"rgb", "rgbw", "rgbww"}
+# HA may describe color-capable lights as hs/xy or as an RGB family.
+COLOR_MODES = {"hs", "xy", "rgb", "rgbw", "rgbww"}
 
 
 def _as_modes(attributes: dict[str, Any]) -> set[str]:
@@ -24,8 +25,13 @@ def _as_modes(attributes: dict[str, Any]) -> set[str]:
     if modes:
         return {str(mode) for mode in modes}
 
-    if attributes.get("rgb_color") is not None or attributes.get("hs_color") is not None:
-        return {"rgb"}
+    if (
+        attributes.get("rgb_color") is not None
+        or attributes.get("hs_color") is not None
+    ):
+        return {"hs"}
+    if attributes.get("xy_color") is not None:
+        return {"xy"}
     if attributes.get("color_temp_kelvin") is not None or attributes.get("color_temp") is not None:
         return {"color_temp"}
     if attributes.get("brightness") is not None:
@@ -45,7 +51,7 @@ def capabilities_from_state(entity_state: dict[str, Any]) -> dict[str, Any]:
         "supported_color_modes": modes,
         "brightness": bool(modes - ONOFF_MODES),
         "color_temp": "color_temp" in modes,
-        "rgb": bool(modes & RGB_MODES),
+        "rgb": bool(modes & COLOR_MODES),
         "effect": bool(effect_list),
         "effect_list": set(str(effect) for effect in effect_list),
         "min_mireds": attributes.get("min_mireds"),

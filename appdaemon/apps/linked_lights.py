@@ -113,6 +113,12 @@ class LinkedLights(BaseApp):
                 self._replace_listeners(group_id, entities)
                 current["entities"] = entities
                 self.log(f"Linked light group '{group_id}' members: {entities}")
+                # HA can expose the entity state before the integration has
+                # populated capability attributes. Retry discovery shortly
+                # after startup so the UI does not remain on/off-only until a
+                # user toggles a physical light.
+                self.run_in(self._delayed_group_refresh, 2, group_id=group_id)
+                self.run_in(self._delayed_group_refresh, 10, group_id=group_id)
 
             self._update_group(group_id)
 
@@ -139,6 +145,11 @@ class LinkedLights(BaseApp):
             if handle is not None:
                 handles.append(handle)
         self._listener_handles[group_id] = handles
+
+    def _delayed_group_refresh(self, kwargs):
+        group_id = kwargs.get("group_id")
+        if group_id in self._groups:
+            self._update_group(group_id)
 
     def _state_change_cb(self, entity, attribute, old, new, kwargs):
         group_id = kwargs.get("group_id")
@@ -188,6 +199,13 @@ class LinkedLights(BaseApp):
 
         group["capabilities"] = capabilities
         group["capability_signature"] = signature
+        self.log(
+            f"Linked light group '{group_id}' capabilities: "
+            f"modes={sorted(capabilities['supported_color_modes'])}, "
+            f"brightness={capabilities['brightness']}, "
+            f"rgb={capabilities['rgb']}, "
+            f"color_temp={capabilities['color_temp']}"
+        )
 
         light = group["light"]
         light.publish_state(json.dumps(state_payload(states, capabilities), separators=(",", ":")))
