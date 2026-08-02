@@ -19,6 +19,7 @@ class AutomationManager(BaseApp):
     """
 
     def initialize(self):
+        super().initialize()
         self.entities = {}
         self.automation_switches = {}
 

@@ -1,4 +1,3 @@
-import appdaemon.plugins.hass.hassapi as hass
 from enum import Enum
 
 from lib.base import BaseApp
@@ -22,10 +21,15 @@ class MeetingIndicator(BaseApp):
     """
 
     def initialize(self):
-        self.log(f'initializing sensor: {self.args["sensors"]}')
+        super().initialize()
+        self.sensors = self.required_arg("sensors")
+        self.lights = self.required_arg("lights")
+        if not self.sensors or not self.lights:
+            return
+        self.log(f'initializing sensor: {self.sensors}')
         self.meeting_state = MeetingStatus.NO_MEETING
         self.prev_states = {}
-        self.listen_state(self.on_button_press, self.args["sensors"])
+        self.listen_state(self.on_button_press, self.sensors)
 
     def on_button_press(self, entity, attribute, old, new, kwargs):
         self.log(f'{entity}: received state change: {new}')
@@ -39,11 +43,11 @@ class MeetingIndicator(BaseApp):
         if self.meeting_state == MeetingStatus.NO_MEETING:
             self.log('activating meeting mode')
             self.meeting_state = MeetingStatus.VOICE_ONLY
-            for light in self.args["lights"]:
+            for light in self.lights:
                 self.prev_states[light] = self.get_state(light, attribute='all')
                 self.turn_on(light, brightness=255, color_name="yellow")
         else:
             self.log('deactivating meeting mode')
             self.meeting_state = MeetingStatus.NO_MEETING
-            for light in self.args["lights"]:
+            for light in self.lights:
                 restore_light_state(self, self.prev_states[light])

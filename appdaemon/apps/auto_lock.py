@@ -20,11 +20,15 @@ class AutoLock(BaseApp):
     """
 
     def initialize(self):
+        super().initialize()
         self.mqtt = self.get_plugin_api("MQTT")
-        self.door_lock_map = self.args.get("door_lock_map", {})
+        self.door_lock_map = self.arg("door_lock_map", {})
         self.lock_door_map = {v: k for k, v in self.door_lock_map.items()}
-        self.enable_topic = self.args["enable_topic"]
-        self.timeout_topic = self.args["timeout_topic"]
+        self.enable_topic = self.required_arg("enable_topic")
+        self.timeout_topic = self.required_arg("timeout_topic")
+
+        if not self.enable_topic or not self.timeout_topic:
+            return
 
         self.enabled = True
         self.lock_delay = 600  # Default 10 minutes in seconds

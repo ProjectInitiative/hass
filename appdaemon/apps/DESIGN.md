@@ -29,10 +29,15 @@ requirements.txt    ← single source of truth for pip install
 ### App Lifecycle
 
 1. Apps inherit `BaseApp` (from `lib.base`), not `hass.Hass` directly.
-2. Config comes from `apps.yaml`. Read it via `self.arg(name, default)` or
-   `self.required_arg(name)`.
-3. Global services (`global_notify`, `area_handler`, `garage_utils`) are
-   accessed via `BaseApp` lazy properties — never via raw `get_app()`.
+2. Every app calls `super().initialize()` first; `BaseApp` owns the startup log,
+   so apps don't log their own "initializing" line.
+3. Config comes from `apps.yaml`. Read it via `self.arg(name, default)` or
+   `self.required_arg(name)` (with a graceful bail-out if required args are
+   missing) — never raw `self.args[...]`.
+4. Global services are accessed via `BaseApp` lazy properties — never raw
+   `get_app()`: notifications via `self.notifier`, garage via `self.garage_utils`.
+   (The `area_handler` app is resolved with `await self.get_app("area_handler")`
+   from async callbacks — there is no sync accessor.)
 
 ### Dependency Graph
 
@@ -122,7 +127,7 @@ my_automation:
 
 | Module | Provides | Example |
 |--------|----------|---------|
-| `lib.base` | `BaseApp`, `self.notifier`, `self.area_handler`, `self.garage_utils`, `self.arg()`, `self.required_arg()` | `self.notifier.send(message="Hi")` |
+| `lib.base` | `BaseApp`, `self.notifier`, `self.garage_utils`, `self.arg()`, `self.required_arg()` | `self.notifier.send(message="Hi")` |
 | `lib.notify` | `Notifier` with `send` / `send_critical` / `send_tts` (all keyword-only) | `self.notifier.send_critical(message="Alert!", group="critical_alert_phones")` |
 | `lib.mqtt` | `MQTTSwitch`, `MQTTLight`, `MQTTSensor`, `MQTTNumber` | `MQTTSensor(self, "my_sensor", "My Sensor").publish_discovery()` |
 | `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` | `is_time_between(now.time(), parse_time("22:00"), parse_time("06:00"))` |
@@ -194,8 +199,10 @@ sensor.publish_attributes({"routes": ["Route 1"], "frequency": "weekly"})
 3. **MQTT discovery**: only via `lib/mqtt.py`. One topic convention, one listen pattern.
 4. **Time logic**: only via `lib/time_utils.py`. Never `pytz`, never naive `datetime.now()`.
 5. **Args**: use `self.arg()` / `self.required_arg()`. Never raw `self.args["..."]` for required config.
-6. **No commented-out code**, no dead imports. Ruff catches both.
-7. **Behavior changes**: preserve intent. If you're changing *what* an automation does,
+6. **Startup logs**: `super().initialize()` is the single startup log. Don't add
+   your own "initializing" log line.
+7. **No commented-out code**, no dead imports. Ruff catches both.
+8. **Behavior changes**: preserve intent. If you're changing *what* an automation does,
    that's a separate decision from refactoring *how* it's written.
 
 ## Anti-Patterns to Avoid

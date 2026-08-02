@@ -10,6 +10,7 @@ class GarageNotifyAutomation(BaseApp):
     """
 
     def initialize(self):
+        super().initialize()
         self.door_state = "closed"
         self.door_open_time = None
         self.final_notify_sent = False

@@ -12,9 +12,10 @@ class EntityMonitor(BaseApp):
     """
 
     def initialize(self):
-        self.monitored_entities = self.args.get("entities", [])
-        self.check_interval = self.args.get("check_interval", 60)
-        self.enable_last_seen = self.args.get("enable_last_seen", False)
+        super().initialize()
+        self.monitored_entities = self.arg("entities", [])
+        self.check_interval = self.arg("check_interval", 60)
+        self.enable_last_seen = self.arg("enable_last_seen", False)
 
         if not self.monitored_entities:
             self.log("No entities specified for monitoring.")

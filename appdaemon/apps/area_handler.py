@@ -15,7 +15,7 @@ class AreaHandler(BaseApp):
 
     def initialize(self):
         """Initialize the Area Handler."""
-        self.log(f"--- Initializing {APP_NAME} ---")
+        super().initialize()
         
         # --- Data Storage ---
         # A dict mapping an Area Name to a list of its entities
@@ -30,7 +30,7 @@ class AreaHandler(BaseApp):
         self._labels_with_entities = {}
         
         # Get refresh interval from config (defaults to every 10 minutes)
-        refresh_interval_seconds = self.args.get("refresh_interval", 600)
+        refresh_interval_seconds = self.arg("refresh_interval", 600)
 
         # Run the first update on startup, then schedule periodic updates
         self.create_task(self._update_area_data())

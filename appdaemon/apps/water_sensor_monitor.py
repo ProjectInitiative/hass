@@ -8,20 +8,21 @@ class WaterSensorMonitor(BaseApp):
     """
 
     def initialize(self):
-        self.water_sensor_entities = self.args.get("water_sensors", [])
+        super().initialize()
+        self.water_sensor_entities = self.arg("water_sensors", [])
         if not self.water_sensor_entities:
             self.log("No water_sensors configured. App will not monitor any sensors.", level="WARNING")
             return
 
-        self.main_valve_switch = self.args.get("main_water_valve_switch")
-        self.shutoff_exclusion_sensors = self.args.get("shutoff_exclusion_sensors", [])
+        self.main_valve_switch = self.arg("main_water_valve_switch")
+        self.shutoff_exclusion_sensors = self.arg("shutoff_exclusion_sensors", [])
 
-        self.notification_group = self.args.get("notification_group")
+        self.notification_group = self.arg("notification_group")
         if not self.notification_group:
             self.log("No notification_group configured. Notifications will not be sent.", level="ERROR")
 
-        self.send_tts_on_alert = self.args.get("send_tts", True)
-        self.tts_use_max_volume = self.args.get("tts_max_volume", True)
+        self.send_tts_on_alert = self.arg("send_tts", True)
+        self.tts_use_max_volume = self.arg("tts_max_volume", True)
 
         self.notifier  # resolve early so errors show at startup
 

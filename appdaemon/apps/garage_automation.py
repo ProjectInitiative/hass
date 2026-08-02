@@ -8,12 +8,13 @@ class GarageAndLightsAutomation(BaseApp):
     """
 
     def initialize(self):
-        self.users = self.args["users"]
+        super().initialize()
+        self.users = self.required_arg("users")
+        if not self.users:
+            return
 
         for user in self.users:
             self.listen_state(self._on_phone_change, user["phone"], user=user)
-
-        self.log("GarageAndLightsAutomation initialized (multi-user refined)")
 
     def _on_phone_change(self, entity, attribute, old, new, kwargs):
         user = kwargs["user"]

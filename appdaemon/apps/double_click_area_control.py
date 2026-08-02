@@ -19,12 +19,12 @@ class DoubleClickAreaControl(BaseApp):
     """
 
     def initialize(self):
+        super().initialize()
         self._area_handler = None
-        self._config = self.args
         self._detector = DoubleClickDetector(
-            self._config.get("double_click_window", 0.75)
+            self.arg("double_click_window", 0.75)
         )
-        self.switches = self._config.get("switches", []) or []
+        self.switches = self.arg("switches", []) or []
 
         if not self.switches:
             self.log(

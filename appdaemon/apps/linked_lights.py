@@ -28,6 +28,7 @@ class LinkedLights(BaseApp):
     """Create dynamically discovered virtual lights for configured groups."""
 
     def initialize(self):
+        super().initialize()
         self.groups_config = self.arg("groups", []) or []
         self._groups: dict[str, dict[str, Any]] = {}
 

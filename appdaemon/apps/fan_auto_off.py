@@ -13,7 +13,8 @@ class FanAutoOff(BaseApp):
     """
 
     def initialize(self):
-        self.fans = self.args.get("fans", {})
+        super().initialize()
+        self.fans = self.arg("fans", {})
         self.fan_timers = {}
         self.timezone = self.get_timezone()
 
