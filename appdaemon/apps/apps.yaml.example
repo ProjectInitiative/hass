@@ -126,7 +126,7 @@ door_light_automation:
     binary_sensor.doors_front_door:
       - light.porch_light
       - light.entrance_light
-  timeout: 300
+  timeout: 300  # seconds (5 minutes)
   sun_entity: sun.sun
   next_rising_entity: sensor.sun_next_rising
   next_setting_entity: sensor.sun_next_setting

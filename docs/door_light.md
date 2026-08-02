@@ -27,7 +27,7 @@ class: DoorLightAutomation
     binary_sensor.doors_back_door:
       # back porch light
       - light.0x84fd27fffebcd13a
-  timeout: 5  # minutes (converted to seconds internally)
+  timeout: 900  # seconds (15 minutes)
   sun_entity: sun.sun
   next_rising_entity: sensor.sun_next_rising
   next_setting_entity: sensor.sun_next_setting
