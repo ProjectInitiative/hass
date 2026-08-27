@@ -26,8 +26,12 @@ class AllLights(BaseApp):
         self.lights = []
         states = self.get_state()
         for entity in states.values():
-            if entity['entity_id'].split('.')[0] == 'light':
-                if 'bedroom' not in entity['attributes']['friendly_name'].lower():
+            entity_id = entity.get('entity_id', '')
+            attributes = entity.get('attributes') or {}
+            friendly_name = attributes.get('friendly_name', entity_id)
+
+            if entity_id.split('.')[0] == 'light':
+                if 'bedroom' not in friendly_name.lower():
                     self.lights.append(entity)
 
     def _publish_current_state(self):
@@ -46,10 +50,12 @@ class AllLights(BaseApp):
         if payload == "ON":
             for entity in self.lights:
                 light = self.get_entity(entity['entity_id'])
-                self.log(f"Turning on {entity['attributes']['friendly_name']}")
+                attributes = entity.get('attributes') or {}
+                self.log(f"Turning on {attributes.get('friendly_name', entity.get('entity_id', 'light'))}")
                 light.call_service("turn_on")
         elif payload == "OFF":
             for entity in self.lights:
                 light = self.get_entity(entity['entity_id'])
-                self.log(f"Turning off {entity['attributes']['friendly_name']}")
+                attributes = entity.get('attributes') or {}
+                self.log(f"Turning off {attributes.get('friendly_name', entity.get('entity_id', 'light'))}")
                 light.call_service("turn_off")
