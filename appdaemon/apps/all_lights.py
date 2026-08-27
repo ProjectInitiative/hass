@@ -8,6 +8,7 @@ class AllLights(BaseApp):
     """
 
     def initialize(self):
+        super().initialize()
         self.mqtt = self.get_plugin_api("MQTT")
         self.lights = []
 

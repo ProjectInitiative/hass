@@ -337,6 +337,7 @@ republic_services_schedule:
   # Address configuration: set rs_address in secrets.yaml OR create
   # input_text.rs_address entity in HA (preferred — changeable from HA UI).
   schedule_hour: 6  # Hour to refresh schedule (24h format, default: 6 AM)
+  notify_time: "07:00:00"  # Time to send pickup reminders (24h format, default: 7:00 am day before pickup)
   dependencies:
     - global_notify
 

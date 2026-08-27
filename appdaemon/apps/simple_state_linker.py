@@ -27,16 +27,16 @@ class SimpleStateLinker(BaseApp):
     """
 
     def initialize(self):
-        self.log("--- Initializing Simple State Linker ---")
+        super().initialize()
 
         self._area_handler = None
         self._active_groups: Set[Tuple[str, ...]] = set()
         self._initialized = False
 
-        self.grace_period = float(self.args.get("grace_period", 2.0))
+        self.grace_period = float(self.arg("grace_period", 2.0))
         self.log(f"Using a grace period of {self.grace_period} seconds.")
 
-        self.groups_config: List[dict] = self.args.get("groups", [])
+        self.groups_config: List[dict] = self.arg("groups", [])
         if not self.groups_config:
             self.log("No 'groups' configured. The app will do nothing.", level="WARNING")
             return

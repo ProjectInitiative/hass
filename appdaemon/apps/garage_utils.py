@@ -5,9 +5,11 @@ class GarageUtils(BaseApp):
     """Shared utility for garage operations."""
 
     def initialize(self):
-        self.garage_door = self.args["garage_door"]
-        self.lights = self.args["lights"]
-        self.log("GarageUtils Initialized")
+        super().initialize()
+        self.garage_door = self.required_arg("garage_door")
+        self.lights = self.required_arg("lights")
+        if not self.garage_door or not self.lights:
+            return
 
     def close_garage_and_lights(self):
         self.log("Attempting to close garage door and turn off lights")

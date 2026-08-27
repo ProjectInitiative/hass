@@ -51,7 +51,7 @@ class StateManager(BaseApp):
     DEFAULT_DOMAINS = ["light", "fan", "cover", "media_player"]
 
     def initialize(self):
-        self.log("Initializing State Manager...")
+        super().initialize()
 
         snapshot_path = self.arg("snapshot_path")
         if snapshot_path and not os.path.isabs(snapshot_path):
@@ -90,9 +90,9 @@ class StateManager(BaseApp):
 
     def _resolve_entities(self):
         """Build the entity list from domains + explicit entities, minus excludes."""
-        domains = self.args.get("domains", self.DEFAULT_DOMAINS)
-        explicit = self.args.get("entities", [])
-        exclude = set(self.args.get("exclude", []))
+        domains = self.arg("domains", self.DEFAULT_DOMAINS)
+        explicit = self.arg("entities", [])
+        exclude = set(self.arg("exclude", []))
 
         all_states = self.get_state()
         tracked = set()

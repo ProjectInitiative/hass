@@ -10,14 +10,14 @@ class DoorLightAutomation(BaseApp):
     """
 
     def initialize(self):
-        self.log("Door-Light Automation initializing")
+        super().initialize()
 
-        self.door_light_map = self.args.get("door_light_map", {})
-        self.timeout = self.args.get("timeout", 15 * 60)
-        self.sun_entity = self.args.get("sun_entity", "sun.sun")
-        self.next_rising_entity = self.args.get("next_rising_entity", "sensor.sun_next_rising")
-        self.next_setting_entity = self.args.get("next_setting_entity", "sensor.sun_next_setting")
-        self.grace_period = self.args.get("grace_period", 30)
+        self.door_light_map = self.arg("door_light_map", {})
+        self.timeout = self.arg("timeout", 15 * 60)
+        self.sun_entity = self.arg("sun_entity", "sun.sun")
+        self.next_rising_entity = self.arg("next_rising_entity", "sensor.sun_next_rising")
+        self.next_setting_entity = self.arg("next_setting_entity", "sensor.sun_next_setting")
+        self.grace_period = self.arg("grace_period", 30)
 
         if not self.door_light_map:
             self.log("No door-light mappings configured.", level="WARNING")

@@ -14,6 +14,7 @@ class LinkedSwitches(BaseApp):
     """Create one MQTT switch that controls each configured switch group."""
 
     def initialize(self):
+        super().initialize()
         self.groups_config = self.arg("groups", []) or []
         self._groups: dict[str, dict[str, Any]] = {}
 

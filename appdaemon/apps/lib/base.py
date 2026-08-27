@@ -3,9 +3,8 @@ lib.base — BaseApp, the common base class for all AppDaemon apps.
 
 Provides:
     - Arg helpers: self.arg(name, default) and self.required_arg(name).
-    - Lazy, cached service accessors: self.notifier, self.area_handler,
-      self.garage_utils.
-    - Consistent startup logging.
+    - Lazy, cached service accessors: self.notifier, self.garage_utils.
+    - Consistent startup logging (call super().initialize() first).
 
 All apps should extend BaseApp instead of hass.Hass directly, so that
 service lookups are centralized and config access is type-checked.
@@ -36,7 +35,12 @@ class BaseApp(hass.Hass):
     """
 
     def initialize(self):
-        """Log startup. Override in subclasses; call super().initialize() first."""
+        """
+        Log startup. Subclasses that override initialize() MUST call
+        super().initialize() first — this is the single, consistent startup
+        log for every app, so apps should not log their own "initializing"
+        line.
+        """
         self.log(f"{self.__class__.__name__} initializing")
 
     # --- Config arg helpers ---
@@ -93,17 +97,6 @@ class BaseApp(hass.Hass):
             from lib.notify import Notifier
             self._notifier = Notifier(self)
         return self._notifier
-
-    @property
-    def area_handler(self):
-        """
-        The area_handler app instance (cached).
-
-        Returns None if not found.
-        """
-        if not hasattr(self, "_area_handler"):
-            self._area_handler = self.get_app("area_handler")
-        return self._area_handler
 
     @property
     def garage_utils(self):
