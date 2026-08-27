@@ -16,19 +16,18 @@ MQTT Discovery entities created:
   - sensor.republic_services_schedule_status        (text status of last fetch)
 """
 
-import appdaemon.plugins.hass.hassapi as hass
-import requests
-import appdaemon.plugins.hass.hassapi as hass
 import requests
 from datetime import datetime, time, timedelta
 import json
 
+from lib.base import BaseApp
 
-class RepublicServicesSchedule(hass.Hass):
+
+class RepublicServicesSchedule(BaseApp):
     """Fetches Republic Services pickup schedule and exposes it as HA entities."""
 
     def initialize(self):
-        self.log("Initializing Republic Services Schedule...")
+        super().initialize()
 
         # Get address: prefer input_text entity, fall back to secrets
         self.address = self._get_address()
@@ -43,8 +42,10 @@ class RepublicServicesSchedule(hass.Hass):
         # Get MQTT plugin API for direct broker access (like all_lights)
         self.mqtt = self.get_plugin_api("MQTT")
 
-        # Get notification app for sending push notifications
-        self.notify_app = self.get_app("global_notify")
+        # Read notification time from apps.yaml (e.g. "17:00:00" for 5 PM)
+        notify_time_str = self.arg("notify_time", "17:00:00")
+        self.notify_time = self.parse_time(notify_time_str)
+        self.log(f"Notification time: {self.notify_time.strftime('%I:%M %p')}")
 
         # Read notification time from apps.yaml (e.g. "17:00:00" for 5 PM)
         notify_time_str = self.args.get("notify_time", "17:00:00")
@@ -370,9 +371,9 @@ class RepublicServicesSchedule(hass.Hass):
         })
 
         try:
-            self.notify_app.notify("family",
-                                   message=msg["message"],
-                                   title=msg["title"])
+            self.notifier.send(group="family",
+                               message=msg["message"],
+                               title=msg["title"])
             self.log(f"Notification sent: {msg['title']}")
         except Exception as e:
             self.log(f"Notification failed for {service_type}: {e}", level="WARNING")
@@ -470,7 +471,7 @@ class RepublicServicesSchedule(hass.Hass):
                 title = "Recycling Pickup Today!"
             
             try:
-                self.notify_app.notify("family", message=msg, title=title)
+                self.notifier.send(group="family", message=msg, title=title)
                 self.log(f"TODAY notification sent: {title}")
             except Exception as e:
                 self.log(f"Today notification failed: {e}", level="WARNING")

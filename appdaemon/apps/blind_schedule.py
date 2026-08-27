@@ -1,11 +1,12 @@
-import appdaemon.plugins.hass.hassapi as hass
 from datetime import time
 
-class BlindSchedule(hass.Hass):
+from lib.base import BaseApp
+
+class BlindSchedule(BaseApp):
     def initialize(self):
-        self.log("Initializing BlindSchedule", level="INFO")
-        self.groups = self.args.get("groups", {})
-        self.blinds = self.args.get("blinds", {})
+        super().initialize()
+        self.groups = self.arg("groups", {})
+        self.blinds = self.arg("blinds", {})
         self.last_light_triggered = {}
         self.global_defaults = {
             "direction": "down",

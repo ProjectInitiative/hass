@@ -2,8 +2,8 @@
 
 **Module:** `testbutton_notification`
 **Class:** `TestButtonNotification`
-**Category:** General
-**Lines:** 21
+**Category:** Notification
+**Lines:** 13
 
 Sends a notification when the test button (Zigbee action sensor) is pressed. Used for testing notification flows.
 
@@ -17,10 +17,10 @@ class: TestButtonNotification
 
 ## Class: `TestButtonNotification`
 
+Sends a notification when the test button (Zigbee action sensor) is pressed.
 
 ### Public Methods
 
 | Method |
 |--------|
 | `initialize()` |
-| `on_button_press(entity, attribute, old, new, kwargs)` |

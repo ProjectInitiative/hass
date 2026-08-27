@@ -1,0 +1,238 @@
+# Design Document — AppDaemon Home Automation
+
+This document is the entry point for adding new automations and understanding
+the shared library architecture. Read this before writing a new app.
+
+## Architecture Overview
+
+### Repo Layout
+
+```
+appdaemon/apps/
+  lib/              ← shared library package (import from here)
+    base.py         ← BaseApp — common lifecycle, arg helpers, accessors
+    notify.py       ← Notifier — uniform keyword-only wrapper over global_notify
+    mqtt.py         ← MQTTDiscoveryEntity + MQTTSwitch / MQTTLight / MQTTSensor / MQTTNumber
+    time_utils.py   ← parse_time, is_time_between, seconds_until, parse_iso
+    lights.py       ← restore_light_state — light state restoration
+  area_handler.py   ← caches HA areas/devices, fires EVENT_AREAS_UPDATED (priority 10)
+  global_notify.py  ← notification backend (iOS/Android/other, critical, TTS)
+  garage_utils.py   ← shared garage logic
+  ...all other automation apps...
+docs/
+  generate_docs.py  ← auto-generates per-app .md docs from source
+integrations/esphome/  ← ESPHome device configs
+requirements.txt    ← single source of truth for pip install
+.ruff.toml          ← lint + format config (local dev only)
+```
+
+### App Lifecycle
+
+1. Apps inherit `BaseApp` (from `lib.base`), not `hass.Hass` directly.
+2. Every app calls `super().initialize()` first; `BaseApp` owns the startup log,
+   so apps don't log their own "initializing" line.
+3. Config comes from `apps.yaml`. Read it via `self.arg(name, default)` or
+   `self.required_arg(name)` (with a graceful bail-out if required args are
+   missing) — never raw `self.args[...]`.
+4. Global services are accessed via `BaseApp` lazy properties — never raw
+   `get_app()`: notifications via `self.notifier`, garage via `self.garage_utils`.
+   (The `area_handler` app is resolved with `await self.get_app("area_handler")`
+   from async callbacks — there is no sync accessor.)
+
+### Dependency Graph
+
+```
+lib/ (base, notify, mqtt, linked_groups, double_click, time_utils, lights)
+  ↑ consumed by all apps
+
+area_handler (priority: 10, loads first)
+  ↑ fires EVENT_AREAS_UPDATED → simple_state_linker, linked_lights, and linked_switches listen
+  ↑ resolved on demand by double_click_area_control for source-device room lookup
+
+global_notify (notification backend)
+  ↑ wrapped by lib.notify.Notifier → used by all notifying apps
+
+garage_utils
+  ↑ used by garage_automation, garage_notify_automation
+
+state_manager
+  ↑ tracks desired state for lights/fans/covers, reconciles after availability blips
+```
+
+## SOP: Adding a New Automation
+
+1. **Pick a module name** (snake_case). Create `appdaemon/apps/<name>.py`.
+2. **Extend `BaseApp`**, not `hass.Hass`:
+   ```python
+   from lib.base import BaseApp
+
+   class MyAutomation(BaseApp):
+       def initialize(self):
+           ...
+   ```
+3. **Read config** via `self.arg()` / `self.required_arg()`:
+   ```python
+   self.timeout = self.arg("timeout", 300)
+   self.door = self.required_arg("door")
+   if not self.door:
+       return  # bail out gracefully
+   ```
+4. **Need notifications?** Use `self.notifier.send(...)`:
+   ```python
+   self.notifier.send(message="Door opened", title="Alert")
+   self.notifier.send_critical(message="LEAK!", title="Water")
+   self.notifier.send_tts(text="Garage door open", title="Garage")
+   ```
+   Group defaults to the `default_notification_group` in `global_notify`'s config.
+   Do NOT call `get_app("global_notify")` directly.
+5. **Need MQTT discovery?** Use `lib/mqtt.py`:
+   ```python
+   from lib.mqtt import MQTTSwitch, MQTTSensor
+
+   switch = MQTTSwitch(self, "my_switch", "My Switch")
+   switch.publish_discovery()
+   switch.listen_command(self.handle_command)
+   switch.publish_state("OFF")
+   ```
+   Do NOT hand-roll MQTT topics or discovery payloads.
+6. **Need time logic?** Use `lib/time_utils.py`:
+   ```python
+   from lib.time_utils import parse_time, is_time_between, seconds_until, parse_iso
+
+   if is_time_between(now.time(), parse_time("21:00"), parse_time("06:00")):
+       ...  # it's night
+   ```
+   Do NOT reimplement `is_time_between` / `seconds_until` / `parse_iso`.
+7. **Add an entry to `apps.yaml`** (copy the template below).
+8. **Run** `python docs/generate_docs.py` to regenerate docs.
+9. **Reload AppDaemon**, smoke-test, commit.
+
+## apps.yaml Template
+
+```yaml
+my_automation:
+  module: my_automation          # matches the .py filename (without .py)
+  class: MyAutomation           # matches the class name
+  namespace: default            # optional, defaults to default
+  # dependencies:               # only if you use get_app() for a specific service
+  #   - global_notify
+  # Your config args:
+  timeout: 300
+  entities:
+    - light.living_room
+    - light.kitchen
+```
+
+## Library Catalog
+
+| Module | Provides | Example |
+|--------|----------|---------|
+| `lib.base` | `BaseApp`, `self.notifier`, `self.garage_utils`, `self.arg()`, `self.required_arg()` | `self.notifier.send(message="Hi")` |
+| `lib.notify` | `Notifier` with `send` / `send_critical` / `send_tts` (all keyword-only) | `self.notifier.send_critical(message="Alert!", group="critical_alert_phones")` |
+| `lib.mqtt` | `MQTTSwitch`, `MQTTLight`, `MQTTSensor`, `MQTTNumber` | `MQTTSensor(self, "my_sensor", "My Sensor").publish_discovery()` |
+| `lib.time_utils` | `parse_time`, `is_time_between`, `seconds_until`, `parse_iso` | `is_time_between(now.time(), parse_time("22:00"), parse_time("06:00"))` |
+| `lib.lights` | `restore_light_state` — restore a light to its previous state | `restore_light_state(self, prev_state_dict)` |
+| `lib.linked_groups` | Shared area/label/manual selectors, dynamic membership refresh, and state listeners for linked entities | `LinkedGroupManager(...)` |
+| `lib.double_click` | Matching event detector with configurable window and injectable clock | `DoubleClickDetector(0.75)` |
+| `lib.light_groups` | Capability intersection, MQTT color conversion, and aggregate state helpers for linked lights | `intersect_capabilities(states)` |
+| `lib.switch_groups` | Aggregate state and command parsing helpers for linked virtual switches | `parse_switch_command(payload)` |
+| `lib.state_manager` | `DesiredStateStore` + `Reconciler` — outage recovery via desired-state | `reconciler.reconcile(entity, state, attrs)` |
+
+### Notifier API (keyword-only)
+
+```python
+# Standard notification (uses default group from global_notify config)
+self.notifier.send(message="Door opened", title="Garage")
+
+# Override the group
+self.notifier.send(message="Alert", title="Security", group="critical_alert_phones")
+
+# Critical alert (iOS critical sound + Android alarm_stream)
+self.notifier.send_critical(message="WATER LEAK!", title="Water Alert")
+
+# Text-to-speech (Android only)
+self.notifier.send_tts(text="Garage door open for 30 minutes", title="Garage")
+```
+
+### MQTT Entity API
+
+```python
+from lib.mqtt import MQTTSwitch, MQTTSensor
+
+# Switch (controllable)
+switch = MQTTSwitch(self, "all_lights_switch", "All House Lights")
+switch.publish_discovery()
+switch.listen_command(self.handle_command)  # callback(event_name, data, kwargs)
+switch.publish_state("ON")
+
+# Light groups
+# Use linked_lights.py for configurable entity/area/label groups. It publishes
+# an MQTT JSON-schema light and computes a safe capability intersection.
+
+# Linked switches
+# Use linked_switches.py for label/area/manual groups of simple switches.
+# It fans out switch/turn_on and switch/turn_off service calls.
+
+# Double-click whole-room control
+# Use double_click_area_control.py for two matching MQTT/Zigbee switch events
+# within a short window. It resolves the source device's HA area and fans out
+# light/turn_on or light/turn_off service calls.
+
+# Sensor (read-only, with attributes + device grouping)
+sensor = MQTTSensor(
+    self, "republic_services_trash_next_pickup",
+    "Republic Services Trash",
+    device_name="Republic Services",
+    icon="mdi:trash-can",
+    entity_category="diagnostic",
+)
+sensor.publish_discovery()
+sensor.publish_state("2025-07-20")
+sensor.publish_attributes({"routes": ["Route 1"], "frequency": "weekly"})
+```
+
+## Conventions (the rules that prevent rot)
+
+1. **All apps extend `BaseApp`**, never `hass.Hass` directly.
+   Exception: `lib/base.py` itself and `global_notify.py` (the backend).
+2. **Notifications**: only via `self.notifier`. Never `get_app("global_notify")`.
+3. **MQTT discovery**: only via `lib/mqtt.py`. One topic convention, one listen pattern.
+4. **Time logic**: only via `lib/time_utils.py`. Never `pytz`, never naive `datetime.now()`.
+5. **Args**: use `self.arg()` / `self.required_arg()`. Never raw `self.args["..."]` for required config.
+6. **Startup logs**: `super().initialize()` is the single startup log. Don't add
+   your own "initializing" log line.
+7. **No commented-out code**, no dead imports. Ruff catches both.
+8. **Behavior changes**: preserve intent. If you're changing *what* an automation does,
+   that's a separate decision from refactoring *how* it's written.
+
+## Anti-Patterns to Avoid
+
+These are the old habits that caused the original codebase to rot. Do not reintroduce them.
+
+| Anti-pattern | Do this instead |
+|--------------|-----------------|
+| `import utils` or `from utils import ...` | `from lib import ...` or `from lib.lights import ...` |
+| `self.get_app("global_notify").notify(...)` | `self.notifier.send(...)` |
+| Polling to check device state (`run_every` + compare) | Event-driven `listen_state` — HA websocket is already subscribed; callbacks are cheap |
+| `datetime.now()` (tz-naive) | `self.datetime()` or `self.get_now()` (tz-aware) |
+| `import pytz` | `from zoneinfo import ZoneInfo` (or just use `lib/time_utils`) |
+| `get_plugin_api("MQTT")` + hand-rolled topics | `from lib.mqtt import MQTTSwitch, MQTTSensor` |
+| Copy-pasting `is_time_between` / `seconds_until` | `from lib.time_utils import is_time_between, seconds_until` |
+| Commented-out apps.yaml blocks | Delete them; git remembers |
+| `class My(hass.Hass):` | `class My(BaseApp):` |
+| `.notify("all", message=...)` (positional group) | `.send(group="all", message=...)` (keyword-only) |
+| `group_name=`, `tts_text=`, `use_max_volume=`, `additional_data=` | `group=`, `text=`, `volume_max=`, `data=` |
+
+## Testing
+
+Unit tests for `lib/` modules run without AppDaemon or Home Assistant:
+
+```bash
+cd /home/kylepzak/development/hass
+python appdaemon/apps/lib/test_time_utils.py    # 14 tests
+# or with pytest:
+python -m pytest appdaemon/apps/lib/ -v
+```
+
+The `test_rs_schedule.py` script is a standalone CLI for testing the Republic
+Services API connection — it requires no AppDaemon, just an address argument.

@@ -3,7 +3,7 @@
 **Module:** `garage_utils`
 **Class:** `GarageUtils`
 **Category:** Utility
-**Lines:** 45
+**Lines:** 44
 
 Shared utility for garage operations. Provides functions to open/close both the garage door and associated lights simultaneously. Used by garage_automation and garage_notify_automation.
 
@@ -25,6 +25,7 @@ class: GarageUtils
 
 ## Class: `GarageUtils`
 
+Shared utility for garage operations.
 
 ### Public Methods
 
@@ -33,5 +34,4 @@ class: GarageUtils
 | `initialize()` |
 | `close_garage_and_lights()` |
 | `open_garage_and_lights()` |
-| `check_garage_door_state(kwargs)` |
-| `notify(message)` |
+| `notify_failure(action)` |

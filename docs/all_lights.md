@@ -2,29 +2,24 @@
 
 **Module:** `all_lights`
 **Class:** `AllLights`
-**Category:** General
-**Lines:** 138
+**Category:** Utility
+**Lines:** 54
 
-Controls all lights in the house — toggle them all on/off via a virtual switch. Can also group lights by areas.
+Controls all lights in the house — toggle them all on/off via a virtual MQTT switch. Excludes bedroom lights.
 
 ## Configuration
 
 ```yaml
 class: AllLights
-  dependencies:
-    - utils
-
-# Configure the new state linker app
 ```
 
 ## Class: `AllLights`
 
+Virtual MQTT switch that toggles all (non-bedroom) lights on/off.
 
 ### Public Methods
 
 | Method |
 |--------|
 | `initialize()` |
-| `build_discovery_message()` |
-| `set_state(event_name, data, kwargs)` |
-| `publish_state(payload)` |
+| `handle_command(event_name, data, kwargs)` |
