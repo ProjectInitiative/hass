@@ -313,6 +313,13 @@ water_sensor_monitor:
   send_tts: false
   tts_max_volume: true
   main_water_valve_switch: switch.0xa4c1385bc05a3077
+  # Debounce: suppress duplicate notifications within this window after one
+  # is sent (sensors flap off->on rapidly while water pools). Valve shutoff
+  # is NOT debounced. Default 300 if omitted.
+  notification_cooldown: 300
+  # While a sensor stays wet, re-send a "still leaking" reminder every N
+  # seconds. 0 disables reminders. Default 900 if omitted.
+  active_realert_interval: 900
   water_sensors:
     - binary_sensor.0xa4c138374c40733e_water_leak # AC Overflow Pan
     - binary_sensor.0xa4c138864081ec78_water_leak # Interior AC electrical
